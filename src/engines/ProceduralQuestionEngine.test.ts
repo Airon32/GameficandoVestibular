@@ -37,6 +37,26 @@ describe('SimuladoEngine', () => {
         );
       }
       expect(new Set(session.questions.map((question) => question.id)).size).toBe(session.questions.length);
+      for (const question of session.questions) {
+        expect(SimuladoEngine.isExamCompatibleQuestion(question)).toBe(true);
+
+        if (question.questionType === 'multiple_choice') {
+          expect(question.options.length).toBeGreaterThanOrEqual(2);
+          expect(question.options.some((option) => option.id === question.correctOptionId)).toBe(true);
+        } else if (question.questionType === 'true_false') {
+          expect(question.statement.trim().length).toBeGreaterThan(0);
+          expect(typeof question.isTrue).toBe('boolean');
+        }
+      }
+    }
+  });
+
+  it('mantém todas as questões respondíveis em sessões aleatórias repetidas', () => {
+    for (let round = 0; round < 12; round++) {
+      for (const profile of Object.values(EXAM_PROFILES)) {
+        const session = SimuladoEngine.generateExamSession(profile);
+        expect(session.questions.every(SimuladoEngine.isExamCompatibleQuestion)).toBe(true);
+      }
     }
   });
 });

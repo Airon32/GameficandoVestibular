@@ -4,13 +4,53 @@ import {
   SimuladoAnswer,
   SimuladoSubjectResult,
   EducationalQuestion,
+  MultipleChoiceQuestion,
+  TrueFalseQuestion,
   SubjectId,
 } from '../types';
 import { QuestionBankService } from '../data/questionBank';
 import { SUBJECTS_CONFIG } from '../config/subjectsConfig';
 import { HybridQuestionEngine } from './HybridQuestionEngine';
+import { ProceduralQuestionEngine } from './ProceduralQuestionEngine';
 
 export class SimuladoEngine {
+  public static isExamCompatibleQuestion(
+    question: EducationalQuestion
+  ): question is MultipleChoiceQuestion | TrueFalseQuestion {
+    if (question.questionType === 'multiple_choice') {
+      return (
+        Array.isArray(question.options) &&
+        question.options.length >= 2 &&
+        question.options.some((option) => option.id === question.correctOptionId)
+      );
+    }
+
+    if (question.questionType === 'true_false') {
+      return Boolean(question.statement?.trim()) && typeof question.isTrue === 'boolean';
+    }
+
+    return false;
+  }
+
+  private static generateCompatibleQuestion(
+    subjectId: SubjectId,
+    targetDifficulty: number,
+    excludeIds: string[]
+  ): MultipleChoiceQuestion | TrueFalseQuestion {
+    const candidate = HybridQuestionEngine.getNextQuestion({
+      subjectId,
+      targetDifficulty,
+      excludeIds,
+      allowSpacedRepetition: false,
+    });
+
+    if (this.isExamCompatibleQuestion(candidate)) {
+      return candidate;
+    }
+
+    return ProceduralQuestionEngine.generate(subjectId, targetDifficulty);
+  }
+
   public static generateExamSession(profile: ExamProfile): {
     sessionId: string;
     questions: EducationalQuestion[];
@@ -23,21 +63,22 @@ export class SimuladoEngine {
     for (const spec of (profile?.subjects || [])) {
       const curated = QuestionBankService.getRandomQuestions({
         subjectId: spec.subjectId,
-        count: Math.min(spec.questionCount, 2),
+        count: Math.max(2, spec.questionCount),
         examProfileId: profile?.id,
         excludeIds,
-      });
+      })
+        .filter(SimuladoEngine.isExamCompatibleQuestion)
+        .slice(0, Math.min(spec.questionCount, 2));
       questions.push(...curated);
       excludeIds.push(...curated.map((question) => question.id));
 
       while (questions.filter((question) => question.subjectId === spec.subjectId).length < spec.questionCount) {
         const position = questions.filter((question) => question.subjectId === spec.subjectId).length;
-        const generated = HybridQuestionEngine.getNextQuestion({
-          subjectId: spec.subjectId,
-          targetDifficulty: Math.min(92, 38 + spec.weight * 6 + position * 2),
-          excludeIds,
-          allowSpacedRepetition: false,
-        });
+        const generated = this.generateCompatibleQuestion(
+          spec.subjectId,
+          Math.min(92, 38 + spec.weight * 6 + position * 2),
+          excludeIds
+        );
         questions.push(generated);
         excludeIds.push(generated.id);
       }
@@ -48,12 +89,11 @@ export class SimuladoEngine {
       const remainingNeeded = profile.totalQuestions - questions.length;
       for (let index = 0; index < remainingNeeded; index++) {
         const subject = profile.subjects[index % profile.subjects.length]?.subjectId || 'matematica';
-        const generated = HybridQuestionEngine.getNextQuestion({
-          subjectId: subject,
-          targetDifficulty: 55 + (index % 4) * 7,
-          excludeIds,
-          allowSpacedRepetition: false,
-        });
+        const generated = this.generateCompatibleQuestion(
+          subject,
+          55 + (index % 4) * 7,
+          excludeIds
+        );
         questions.push(generated);
         excludeIds.push(generated.id);
       }

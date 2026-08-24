@@ -8,6 +8,7 @@ import {
   SimuladoSubjectResult,
   EducationalQuestion,
   MultipleChoiceQuestion,
+  TrueFalseQuestion,
   SubjectId,
   UserState,
 } from '../types';
@@ -63,7 +64,7 @@ export const SimuladoScreen: React.FC<SimuladoScreenProps> = ({
   const questions = sessionData.questions;
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [userAnswers, setUserAnswers] = useState<Record<string, any>>({});
+  const [userAnswers, setUserAnswers] = useState<Record<string, string | boolean>>({});
   const [markedForReview, setMarkedForReview] = useState<Record<string, boolean>>({});
   const [questionTimes, setQuestionTimes] = useState<Record<string, number>>({});
   const [timeRemainingSeconds, setTimeRemainingSeconds] = useState(
@@ -80,24 +81,6 @@ export const SimuladoScreen: React.FC<SimuladoScreenProps> = ({
   const currentQuestion = questions[currentIndex];
   const subjectDef = currentQuestion ? SUBJECTS_CONFIG[currentQuestion.subjectId] : null;
 
-  // Track overall exam countdown
-  useEffect(() => {
-    timerRef.current = setInterval(() => {
-      setTimeRemainingSeconds((prev) => {
-        if (prev <= 1) {
-          clearInterval(timerRef.current!);
-          handleFinishExam();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, []);
-
   // Track question time on switch
   const handleSwitchQuestion = (newIndex: number) => {
     const elapsed = Date.now() - questionStartTimeRef.current;
@@ -111,11 +94,11 @@ export const SimuladoScreen: React.FC<SimuladoScreenProps> = ({
     setCurrentIndex(newIndex);
   };
 
-  const handleSelectOption = (optionId: string) => {
+  const handleSelectAnswer = (answer: string | boolean) => {
     if (!currentQuestion?.id) return;
     setUserAnswers((prev) => ({
       ...prev,
-      [currentQuestion.id]: optionId,
+      [currentQuestion.id]: answer,
     }));
   };
 
@@ -136,17 +119,23 @@ export const SimuladoScreen: React.FC<SimuladoScreenProps> = ({
       let isCorrect = false;
 
       if (q.questionType === 'multiple_choice') {
-        isCorrect = uAns === (q as MultipleChoiceQuestion).correctOptionId;
+        isCorrect = uAns === q.correctOptionId;
       } else if (q.questionType === 'true_false') {
-        isCorrect = uAns === (q as any).isTrue;
+        isCorrect = uAns === q.isTrue;
       }
+
+      const correctAnswer = q.questionType === 'multiple_choice'
+        ? q.correctOptionId
+        : q.questionType === 'true_false'
+          ? q.isTrue
+          : 'UNSUPPORTED';
 
       return {
         questionId: q.id,
         subjectId: q.subjectId,
         topicId: q.topicId,
         userAnswer: uAns ?? 'SKIPPED',
-        correctAnswer: (q as any).correctOptionId || (q as any).isTrue,
+        correctAnswer,
         isCorrect,
         timeTakenMs: questionTimes[q.id] || 10000,
         markedForReview: !!markedForReview[q.id],
@@ -164,6 +153,23 @@ export const SimuladoScreen: React.FC<SimuladoScreenProps> = ({
     if (onCompleteSimulado) onCompleteSimulado(evaluated);
     if (onCompleteExam) onCompleteExam(evaluated);
   };
+
+  // Track overall exam countdown without submitting stale answers when time expires.
+  useEffect(() => {
+    timerRef.current = setInterval(() => {
+      setTimeRemainingSeconds((previous) => Math.max(0, previous - 1));
+    }, 1000);
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (timeRemainingSeconds === 0 && !completedSession) {
+      handleFinishExam();
+    }
+  }, [timeRemainingSeconds, completedSession]);
 
   // Format time remaining MM:SS
   const formatTime = (seconds: number) => {
@@ -418,8 +424,10 @@ export const SimuladoScreen: React.FC<SimuladoScreenProps> = ({
 
                   return (
                     <button
+                      type="button"
                       key={opt.id}
-                      onClick={() => handleSelectOption(opt.id)}
+                      onClick={() => handleSelectAnswer(opt.id)}
+                      aria-pressed={isSelected}
                       className={`w-full p-3 sm:p-4 rounded-xl sm:rounded-2xl border text-left flex items-start sm:items-center gap-3 transition-all ${
                         isSelected
                           ? 'bg-amber-500/20 border-amber-500 text-amber-300 font-semibold shadow-md'
@@ -443,6 +451,58 @@ export const SimuladoScreen: React.FC<SimuladoScreenProps> = ({
                 })}
               </div>
             )}
+
+            {/* True or False */}
+            {currentQuestion.questionType === 'true_false' && (() => {
+              const trueFalseQuestion = currentQuestion as TrueFalseQuestion;
+              const selectedAnswer = userAnswers[currentQuestion.id];
+
+              return (
+                <div className="space-y-3 pt-1">
+                  <div className="rounded-2xl border border-neutral-700 bg-neutral-950/70 p-4 sm:p-5">
+                    <span className="mb-2 block text-[11px] font-black uppercase tracking-[0.16em] text-amber-400">
+                      Afirmação
+                    </span>
+                    <ScientificRenderer
+                      content={trueFalseQuestion.statement}
+                      className="text-sm sm:text-base md:text-lg font-semibold leading-relaxed text-neutral-100"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2" role="group" aria-label="Escolha verdadeiro ou falso">
+                    {([
+                      { value: true, label: 'Verdadeiro', letter: 'V' },
+                      { value: false, label: 'Falso', letter: 'F' },
+                    ] as const).map((option) => {
+                      const isSelected = selectedAnswer === option.value;
+
+                      return (
+                        <button
+                          type="button"
+                          key={option.label}
+                          onClick={() => handleSelectAnswer(option.value)}
+                          aria-pressed={isSelected}
+                          className={`flex min-h-14 w-full items-center gap-3 rounded-2xl border p-3.5 text-left transition-all ${
+                            isSelected
+                              ? 'border-amber-500 bg-amber-500/20 font-semibold text-amber-300 shadow-md'
+                              : 'border-neutral-800 bg-neutral-950/70 text-neutral-200 hover:border-neutral-700'
+                          }`}
+                        >
+                          <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border text-xs font-black ${
+                            isSelected
+                              ? 'border-amber-400 bg-amber-500 text-neutral-950'
+                              : 'border-neutral-700 bg-neutral-800 text-neutral-400'
+                          }`}>
+                            {option.letter}
+                          </span>
+                          <span className="text-sm sm:text-base">{option.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         )}
       </div>
