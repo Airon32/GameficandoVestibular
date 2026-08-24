@@ -7,9 +7,26 @@ import { QuestionGenerator } from './src/engines/QuestionGenerator';
 import firebaseConfig from './firebase-applet-config.json';
 
 const app = express();
-const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_JSON
-  ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON)
-  : null;
+const rawServiceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_JSON?.trim();
+let firebaseConfigurationError = '';
+let serviceAccount: Record<string, any> | null = null;
+if (rawServiceAccount) {
+  try {
+    const normalized = rawServiceAccount.startsWith("'") && rawServiceAccount.endsWith("'")
+      ? rawServiceAccount.slice(1, -1)
+      : rawServiceAccount;
+    serviceAccount = JSON.parse(normalized);
+    if (!serviceAccount?.project_id || !serviceAccount?.client_email || !serviceAccount?.private_key) {
+      firebaseConfigurationError = 'FIREBASE_SERVICE_ACCOUNT_JSON não contém todos os campos obrigatórios.';
+      serviceAccount = null;
+    }
+  } catch (error) {
+    firebaseConfigurationError = 'FIREBASE_SERVICE_ACCOUNT_JSON não contém um JSON válido.';
+    console.error('Firebase Admin configuration error:', error);
+  }
+} else if (process.env.VERCEL) {
+  firebaseConfigurationError = 'FIREBASE_SERVICE_ACCOUNT_JSON não foi configurada na Vercel.';
+}
 if (serviceAccount?.private_key) serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
 const adminApp = getApps().length > 0
   ? getApp()
@@ -51,6 +68,12 @@ interface AuthenticatedRequest extends Request {
 }
 
 async function requireAuth(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  if (firebaseConfigurationError) {
+    return res.status(503).json({
+      error: firebaseConfigurationError,
+      code: 'FIREBASE_ADMIN_NOT_CONFIGURED',
+    });
+  }
   const header = req.header('authorization') || '';
   const token = header.startsWith('Bearer ') ? header.slice(7) : '';
   if (!token) return res.status(401).json({ error: 'Autenticação obrigatória.' });
@@ -107,7 +130,12 @@ function calculateWinner(challenge: any): string | 'draw' {
 }
 
 app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok', time: new Date().toISOString() });
+  res.json({
+    status: 'ok',
+    time: new Date().toISOString(),
+    firebaseAdminConfigured: !firebaseConfigurationError,
+    configurationMessage: firebaseConfigurationError || undefined,
+  });
 });
 
 /** Competitive questions are issued by the server and can be answered only once. */
@@ -284,6 +312,12 @@ app.post('/api/sync', requireAuth, rateLimit(30, 60_000), async (req: Authentica
 });
 
 app.get('/api/leaderboard', rateLimit(60, 60_000), async (_req, res) => {
+  if (firebaseConfigurationError) {
+    return res.status(503).json({
+      error: firebaseConfigurationError,
+      code: 'FIREBASE_ADMIN_NOT_CONFIGURED',
+    });
+  }
   try {
     const snapshot = await adminDb.collection('competitive_users').orderBy('competitiveXP', 'desc').limit(100).get();
     const users = snapshot.docs.map((document) => {
