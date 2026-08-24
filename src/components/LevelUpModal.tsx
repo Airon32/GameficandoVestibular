@@ -1,7 +1,10 @@
 import React, { useEffect } from 'react';
 import confetti from 'canvas-confetti';
-import { ArrowUpRight, Sparkles, Star, Trophy, X } from 'lucide-react';
+import { motion } from 'motion/react';
+import { ArrowUpRight, Route, Sparkles, Star, X } from 'lucide-react';
 import { UserState } from '../types';
+import { RankBadge } from './RankBadge';
+import { RankProfileTheme } from './RankProfileTheme';
 
 interface LevelUpModalProps {
   previousLevel: number;
@@ -16,62 +19,56 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
   userState,
   onClose,
 }) => {
+  const config = userState.rank.visualConfig;
+  const tokens = config?.rankColorTokens;
+  const levelsUntilNextRank = 5 - ((newLevel - 1) % 5);
+
   useEffect(() => {
-    // Launch celebratory confetti fireworks
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     confetti({
-      particleCount: 80,
-      spread: 70,
-      origin: { y: 0.6 },
+      particleCount: 110,
+      spread: 82,
+      startVelocity: 48,
+      origin: { y: 0.62 },
+      colors: tokens ? [tokens.primary, tokens.accent, tokens.textLight, '#FFFFFF'] : undefined,
     });
-  }, []);
+  }, [tokens]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200 select-none">
-      <div className="bg-[#111] border border-orange-500/50 rounded-3xl p-6 sm:p-8 max-w-sm w-full shadow-2xl text-center relative overflow-hidden">
-        {/* Glow backdrop */}
-        <div className="absolute -top-12 -left-12 w-36 h-36 bg-orange-500/20 rounded-full blur-3xl" />
-        <div className="absolute -bottom-12 -right-12 w-36 h-36 bg-amber-500/20 rounded-full blur-3xl" />
+    <div role="dialog" aria-modal="true" aria-label={`Nível ${newLevel} alcançado`} className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-3 backdrop-blur-xl">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(249,115,22,0.14),transparent_58%)]" />
+      <motion.div initial={{ opacity: 0, scale: 0.88, y: 28 }} animate={{ opacity: 1, scale: 1, y: 0 }} className="relative w-full max-w-md overflow-hidden rounded-[2rem] border shadow-2xl" style={{ borderColor: tokens?.border || '#f97316' }}>
+        <RankProfileTheme rank={userState.rank} className="p-6 text-center sm:p-8">
+          <button type="button" onClick={onClose} aria-label="Fechar celebração" className="absolute right-4 top-4 z-20 rounded-full border border-white/10 bg-black/35 p-2 text-white/50 transition hover:text-white"><X size={17} /></button>
 
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-2 text-[#888] hover:text-white rounded-full bg-[#1a1a1a] transition cursor-pointer"
-        >
-          <X className="w-4 h-4" />
-        </button>
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/35 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: tokens?.textLight || '#fdba74' }}><Sparkles size={13} /> Evolução conquistada</div>
+          <h2 className="mt-4 text-3xl font-black tracking-tight text-white sm:text-4xl">VOCÊ ESTÁ MAIS FORTE</h2>
+          <p className="mt-1 text-xs text-white/50">Seu esforço virou progresso permanente.</p>
 
-        <div className="w-20 h-20 mx-auto rounded-3xl bg-orange-600/30 border border-orange-500/50 p-0.5 shadow-xl mb-4 flex items-center justify-center">
-          <Sparkles className="w-10 h-10 text-orange-400 animate-bounce" />
-        </div>
-
-        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-orange-400 block mb-1">
-          Evolução Desbloqueada
-        </span>
-        <h2 className="text-3xl font-black text-white tracking-tight mb-2">
-          LEVEL UP!
-        </h2>
-
-        <div className="flex items-center justify-center gap-3 my-4 bg-[#161616] p-3 rounded-2xl border border-[#222]">
-          <div className="text-[#888] font-mono text-lg font-bold">
-            Nível {previousLevel}
+          <div className="relative mx-auto my-6 flex h-44 w-44 items-center justify-center">
+            <div className="absolute inset-0 animate-pulse rounded-full blur-3xl opacity-30" style={{ backgroundColor: tokens?.accent || '#f97316' }} />
+            <div className="absolute inset-3 rounded-full border border-dashed border-white/20 animate-[spin_14s_linear_infinite]" />
+            <RankBadge rank={userState.rank} size="hero" showGlow showDivision />
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <span className="text-[9px] font-black uppercase tracking-[0.18em] text-white/50">Nível</span>
+              <strong className="text-4xl font-black text-white drop-shadow-xl">{newLevel}</strong>
+            </div>
           </div>
-          <ArrowUpRight className="w-6 h-6 text-orange-400 stroke-[3]" />
-          <div className="text-2xl font-mono font-black text-orange-400">
-            Nível {newLevel}
+
+          <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
+            <div className="flex items-center justify-center gap-3">
+              <span className="text-sm font-bold text-white/35">Nível {previousLevel}</span>
+              <ArrowUpRight className="text-amber-300" size={20} />
+              <span className="text-xl font-black" style={{ color: tokens?.textLight || '#fdba74' }}>Nível {newLevel}</span>
+            </div>
+            <div className="mt-3 flex items-center justify-center gap-2 border-t border-white/10 pt-3 text-xs font-bold text-white/60"><Star size={14} className="text-amber-300" /> {userState.rank.fullName} permanece gravado no seu perfil</div>
           </div>
-        </div>
 
-        <p className="text-xs text-[#888] mb-6 leading-relaxed">
-          Sua velocidade e precisão continuam subindo! As operações se adaptaram ao seu novo nível de maestria.
-        </p>
+          <div className="mt-3 flex items-center justify-center gap-2 rounded-xl border border-purple-400/15 bg-purple-400/10 px-3 py-2.5 text-[11px] font-bold text-purple-200"><Route size={14} /> {levelsUntilNextRank === 1 ? 'O próximo nível revela um novo rank.' : `Faltam ${levelsUntilNextRank} níveis para revelar o próximo rank.`}</div>
 
-        <button
-          onClick={onClose}
-          className="w-full py-3.5 rounded-2xl bg-orange-600 text-white font-black text-base uppercase tracking-wider shadow-lg shadow-orange-950/50 hover:bg-orange-500 active:scale-[0.98] transition cursor-pointer"
-        >
-          Continuar Treinando
-        </button>
-      </div>
+          <button type="button" onClick={onClose} className="mt-6 w-full rounded-2xl border py-4 text-sm font-black uppercase tracking-wider text-white shadow-xl transition hover:brightness-110 active:scale-[0.98]" style={{ backgroundColor: tokens?.primary || '#f97316', borderColor: tokens?.accent || '#fb923c', boxShadow: `0 0 24px ${tokens?.glow || 'rgba(249,115,22,.3)'}` }}>Celebrar e continuar</button>
+        </RankProfileTheme>
+      </motion.div>
     </div>
   );
 };
-

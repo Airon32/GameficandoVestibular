@@ -86,6 +86,20 @@ export const RankProfileTheme: React.FC<RankProfileThemeProps> = ({
         boxShadow: `0 0 25px ${tokens.cardGlow}`,
       }}
     >
+      {/* Rank-colored atmospheric lighting */}
+      <div
+        className="absolute -right-20 -top-24 h-64 w-64 rounded-full blur-[80px] pointer-events-none opacity-25"
+        style={{ backgroundColor: tokens.primary }}
+      />
+      <div
+        className="absolute -bottom-28 -left-20 h-72 w-72 rounded-full blur-[90px] pointer-events-none opacity-20"
+        style={{ backgroundColor: tokens.accent }}
+      />
+      <div
+        className="absolute inset-x-0 top-0 h-px pointer-events-none opacity-80"
+        style={{ background: `linear-gradient(90deg, transparent, ${tokens.textLight}, transparent)` }}
+      />
+
       {/* Subtle Pattern Texture */}
       <div
         className="absolute inset-0 opacity-10 pointer-events-none mix-blend-overlay"
@@ -94,6 +108,16 @@ export const RankProfileTheme: React.FC<RankProfileThemeProps> = ({
           backgroundSize: '16px 16px',
         }}
       />
+
+      {/* Higher ranks gain a living aurora without affecting layout. */}
+      {tierIndex >= 7 && (
+        <div
+          className={`absolute left-1/2 top-0 h-24 w-2/3 -translate-x-1/2 rounded-full blur-3xl pointer-events-none opacity-20 ${
+            tierIndex >= 14 ? 'animate-pulse' : ''
+          }`}
+          style={{ backgroundColor: tokens.textLight }}
+        />
+      )}
 
       {/* Particle Effects */}
       {renderParticles()}

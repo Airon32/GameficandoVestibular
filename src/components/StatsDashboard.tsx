@@ -132,7 +132,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ userState }) => 
               </div>
               <p className="text-xs text-[#888]">
                 {infiniteStats
-                  ? 'Você concluiu a jornada principal de 30 ligas competitivas.'
+                  ? 'Você concluiu a jornada pessoal pelos 30 ranks de maestria.'
                   : 'Calibrado para 7 a 8 meses de treino consistente (~45 min/dia).'}
               </p>
             </div>
@@ -408,4 +408,3 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ userState }) => 
     </div>
   );
 };
-

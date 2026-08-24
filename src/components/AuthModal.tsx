@@ -119,8 +119,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             {mode === 'forgot' && 'Recuperar Senha'}
           </h2>
           <p className="text-xs text-[#999] mt-1">
-            {mode === 'login' && 'Acesse seus Levels, Ranks, Ligas e Desafios.'}
-            {mode === 'signup' && 'Cadastre-se para competir e sincronizar seu progresso.'}
+            {mode === 'login' && 'Acesse seus níveis, ranks, apostilas e progresso pessoal.'}
+            {mode === 'signup' && 'Cadastre-se para proteger e sincronizar sua jornada.'}
             {mode === 'forgot' && 'Informe seu e-mail para redefinir sua senha com segurança.'}
           </p>
         </div>

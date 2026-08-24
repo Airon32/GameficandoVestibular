@@ -1096,13 +1096,35 @@ export const RankBadge: React.FC<RankBadgeProps> = ({
         />
       )}
 
+      {showGlow && !isLocked && tierIndex >= 7 && (
+        <div
+          className={`absolute -inset-2 rounded-full border opacity-55 pointer-events-none ${
+            animated ? 'animate-[spin_14s_linear_infinite]' : ''
+          }`}
+          style={{ borderColor: tokens.accent, borderStyle: tierIndex >= 14 ? 'dashed' : 'solid' }}
+        />
+      )}
+
+      {showGlow && !isLocked && tierIndex >= 14 && (
+        <div
+          className={`absolute -inset-4 rounded-full border border-dotted opacity-35 pointer-events-none ${
+            animated ? 'animate-[spin_20s_linear_infinite_reverse]' : ''
+          }`}
+          style={{ borderColor: tokens.textLight }}
+        />
+      )}
+
       {/* Main SVG Badge Artwork */}
       <div
         className={`relative w-full h-full flex items-center justify-center ${
           isLocked ? 'grayscale opacity-40 brightness-75' : ''
-        } ${animated ? 'transition-all duration-300' : ''}`}
+        } ${animated ? `${tierIndex >= 10 ? 'animate-[pulse_3.4s_ease-in-out_infinite]' : ''} transition-all duration-300` : ''}`}
       >
         {renderBadgeArtwork()}
+
+        {!isLocked && tierIndex >= 7 && (
+          <div className="absolute inset-[12%] -skew-x-12 rounded-full bg-gradient-to-r from-transparent via-white/20 to-transparent mix-blend-screen pointer-events-none" />
+        )}
 
         {/* Locked Overlay Icon */}
         {isLocked && (

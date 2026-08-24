@@ -5,14 +5,11 @@ import { CalculatorScreen } from './components/CalculatorScreen';
 import { StatsDashboard } from './components/StatsDashboard';
 import { CalendarView } from './components/CalendarView';
 import { AchievementsView } from './components/AchievementsView';
-import { SocialHub } from './components/SocialHub';
 import { GameModeSelector } from './components/GameModeSelector';
 import { SettingsModal } from './components/SettingsModal';
-import { UserProfileModal } from './components/UserProfileModal';
+import { PlayerProfileModal } from './components/PlayerProfileModal';
 import { AuthModal } from './components/AuthModal';
 import { OnboardingModal } from './components/OnboardingModal';
-import { NotificationsPopover } from './components/NotificationsPopover';
-import { ChallengeArena } from './components/ChallengeArena';
 import { LevelUpModal } from './components/LevelUpModal';
 import { RankUpModal } from './components/RankUpModal';
 import { InfiniteCelebrationModal } from './components/InfiniteCelebrationModal';
@@ -37,8 +34,6 @@ import {
   SyncEvent,
   UserSettings,
   UserState,
-  FriendProfileSummary,
-  Challenge,
   EducationalQuestion,
   SubjectId,
   ExamProfile,
@@ -60,15 +55,15 @@ import { QuestionBankService } from './data/questionBank';
 import { EXAM_PROFILES } from './config/examProfilesConfig';
 import { StorageService, createDefaultUserState, setActiveUserId, getActiveUserId } from './services/storageService';
 import { AuthService } from './services/authService';
-import { SocialService } from './services/socialService';
 import { CloudStorageService } from './services/firebase';
 import { soundService } from './services/soundService';
 import { ApiClient } from './services/apiClient';
 import { DIFFICULTY_CONFIG } from './config/difficultyConfig';
+import { getCurrentWeekId } from './utils/progressPeriod';
 
 export default function App() {
   const [userState, setUserState] = useState<UserState>(() => StorageService.loadState());
-  const [activeTab, setActiveTab] = useState<'home' | 'game' | 'social' | 'stats' | 'calendar' | 'achievements'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'game' | 'stats' | 'calendar' | 'achievements'>('home');
   const [gameMode, setGameMode] = useState<GameMode>('mixed');
 
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
@@ -79,16 +74,12 @@ export default function App() {
   const [isCloudSyncing, setIsCloudSyncing] = useState<boolean>(false);
   const [lastSyncedAt, setLastSyncedAt] = useState<number | undefined>(undefined);
 
-  // Auth & Social Modals
+  // Account and single-player profile modals
   const [authUser, setAuthUser] = useState<any>(null);
   const [showAuthModal, setShowAuthModal] = useState<boolean>(false);
   const [showRecoveryModal, setShowRecoveryModal] = useState<boolean>(false);
   const [showOnboardingModal, setShowOnboardingModal] = useState<boolean>(false);
-  const [showNotificationsPopover, setShowNotificationsPopover] = useState<boolean>(false);
-  const [unreadNotificationsCount, setUnreadNotificationsCount] = useState<number>(0);
-  const [selectedFriendProfile, setSelectedFriendProfile] = useState<FriendProfileSummary | null>(null);
-  const [showUserProfileModal, setShowUserProfileModal] = useState<boolean>(false);
-  const [activeChallengeToPlay, setActiveChallengeToPlay] = useState<Challenge | null>(null);
+  const [showPlayerProfileModal, setShowPlayerProfileModal] = useState<boolean>(false);
 
   const [feedback, setFeedback] = useState<{
     visible: boolean;
@@ -196,13 +187,6 @@ export default function App() {
           }
         });
 
-        // Load notifications count
-        try {
-          const notifs = await SocialService.getNotifications(firebaseUser.uid);
-          setUnreadNotificationsCount(notifs.filter((n) => !n.isRead).length);
-        } catch {
-          // Ignore
-        }
       }
     });
 
@@ -258,7 +242,7 @@ export default function App() {
     const difficultyProfile = DifficultyEngine.computeTargetDifficulty(userStateRef.current, ops);
     let newQ: Question;
     if (authUser) {
-      const issued = await ApiClient.issueCompetitiveQuestion({
+      const issued = await ApiClient.issueSoloQuestion({
         operations: ops,
         difficultyScore: difficultyProfile.targetDifficultyScore,
       });
@@ -328,7 +312,7 @@ export default function App() {
     let serverXP: number | null = null;
     let validatedCorrectAnswer = currentQuestion.correctAnswer;
 
-    // Signed-in competitive answers are validated by the server. It derives the
+    // Signed-in private-session answers may be validated by the server. It derives the
     // correct answer from the expression and never accepts correctAnswer from the browser.
     if (authUser && serverIssuedQuestionRef.current) {
       const verification = await ApiClient.verifyAnswerOnServer({
@@ -469,7 +453,7 @@ export default function App() {
     }
 
     // 7. Update Level & XP Progression + Weekly XP
-    const currentWeekId = SocialService.getWeekIdentifier();
+    const currentWeekId = getCurrentWeekId();
     const newTotalXP = userState.totalXP + xpEarned;
     const currentWeeklyXP = userState.currentWeekId === currentWeekId ? (userState.weeklyXP || 0) : 0;
     const newWeeklyXP = currentWeeklyXP + xpEarned;
@@ -619,7 +603,7 @@ export default function App() {
   const handleLogout = async () => {
     await AuthService.logout();
     setAuthUser(null);
-    setShowUserProfileModal(false);
+    setShowPlayerProfileModal(false);
     const guestState = createDefaultUserState();
     setUserState(guestState);
     StorageService.saveState(guestState);
@@ -628,7 +612,7 @@ export default function App() {
   const handleDeleteAccount = async () => {
     await AuthService.deleteAccount();
     setAuthUser(null);
-    setShowUserProfileModal(false);
+    setShowPlayerProfileModal(false);
     const guestState = createDefaultUserState();
     setUserState(guestState);
     StorageService.saveState(guestState);
@@ -727,7 +711,7 @@ export default function App() {
     // 2. Grant Global XP and advance level/ranks
     const earnedXP = sessionStats.totalXP || sessionStats.xpEarned || (sessionStats.correctCount * 15);
     const now = Date.now();
-    const currentWeekId = SocialService.getWeekIdentifier();
+    const currentWeekId = getCurrentWeekId();
     const newTotalXP = currentState.totalXP + earnedXP;
     const currentWeeklyXP = currentState.currentWeekId === currentWeekId ? (currentState.weeklyXP || 0) : 0;
     const newWeeklyXP = currentWeeklyXP + earnedXP;
@@ -886,18 +870,11 @@ export default function App() {
           }}
           onOpenSettings={() => setShowSettings(true)}
           onOpenProfile={() => {
-            setSelectedFriendProfile(null);
-            setShowUserProfileModal(true);
+            setShowPlayerProfileModal(true);
           }}
-          onOpenTests={() => setShowTests(true)}
           onOpenAndroidInstall={() => setShowAndroidInstall(true)}
           onOpenAuth={() => setShowAuthModal(true)}
-          onOpenNotifications={() => setShowNotificationsPopover(true)}
-          unreadNotificationsCount={unreadNotificationsCount}
           isLoggedIn={!!authUser}
-          isCloudSyncing={isCloudSyncing}
-          lastSyncedAt={lastSyncedAt}
-          onTriggerManualSync={handleManualCloudSync}
           onOpenRecovery={() => setShowRecoveryModal(true)}
         />
       )}
@@ -1050,13 +1027,8 @@ export default function App() {
                 onSelectSubjectDetail={(sId) => setSelectedSubjectDetail(sId)}
                 onNavigateTab={(tab) => setActiveTab(tab)}
                 onOpenProfile={() => {
-                  setSelectedFriendProfile(null);
-                  setShowUserProfileModal(true);
+                  setShowPlayerProfileModal(true);
                 }}
-                onOpenAuth={() => setShowAuthModal(true)}
-                onOpenNotifications={() => setShowNotificationsPopover(true)}
-                unreadNotificationsCount={unreadNotificationsCount}
-                isLoggedIn={!!authUser}
                 onOpenRecovery={() => setShowRecoveryModal(true)}
               />
             )}
@@ -1076,29 +1048,6 @@ export default function App() {
               />
             )}
 
-            {activeTab === 'social' && (
-              <SocialHub
-                currentUser={userState}
-                onOpenProfile={(friendSummary) => {
-                  setSelectedFriendProfile(friendSummary);
-                  setShowUserProfileModal(true);
-                }}
-                onStartChallenge={async (opponent) => {
-                  if (!authUser) {
-                    setShowAuthModal(true);
-                    return;
-                  }
-                  const res = await SocialService.createChallenge(userState, opponent, 20);
-                  if (res.success && res.challenge) {
-                    setActiveChallengeToPlay(res.challenge);
-                  }
-                }}
-                onPlayChallenge={(chal) => setActiveChallengeToPlay(chal)}
-                onOpenAuth={() => setShowAuthModal(true)}
-                isGuest={!authUser}
-              />
-            )}
-
             {activeTab === 'stats' && <StatsDashboard userState={userState} />}
 
             {activeTab === 'calendar' && <CalendarView userState={userState} />}
@@ -1109,16 +1058,6 @@ export default function App() {
           </>
         )}
       </main>
-
-      {/* 1v1 Challenge Match Arena */}
-      {activeChallengeToPlay && (
-        <ChallengeArena
-          challenge={activeChallengeToPlay}
-          currentUser={userState}
-          onFinish={(updated) => setActiveChallengeToPlay(updated)}
-          onExit={() => setActiveChallengeToPlay(null)}
-        />
-      )}
 
       {/* Modals & Dialogs */}
       {showAuthModal && (
@@ -1161,39 +1100,16 @@ export default function App() {
         />
       )}
 
-      {showNotificationsPopover && (
-        <NotificationsPopover
-          isOpen={showNotificationsPopover}
-          onClose={() => setShowNotificationsPopover(false)}
-          userId={userState?.id || ''}
-          onOpenChallenges={() => setActiveTab('social')}
-          onOpenFriends={() => setActiveTab('social')}
-          onOpenLeagues={() => setActiveTab('social')}
-        />
-      )}
-
-      {showUserProfileModal && (
-        <UserProfileModal
-          isOpen={showUserProfileModal}
-          onClose={() => {
-            setShowUserProfileModal(false);
-            setSelectedFriendProfile(null);
-          }}
-          currentUser={userState}
-          viewingProfile={selectedFriendProfile}
-          isSelf={!selectedFriendProfile || selectedFriendProfile.userId === userState?.id}
-          onStartChallenge={async (opp) => {
-            setShowUserProfileModal(false);
-            const res = await SocialService.createChallenge(userState, opp, 20);
-            if (res.success && res.challenge) {
-              setActiveChallengeToPlay(res.challenge);
-            }
-          }}
-          onUpdateCurrentUser={handleUpdateProfile}
+      {showPlayerProfileModal && (
+        <PlayerProfileModal
+          isOpen={showPlayerProfileModal}
+          onClose={() => setShowPlayerProfileModal(false)}
+          userState={userState}
+          onUpdateUser={handleUpdateProfile}
           onLogout={handleLogout}
           onDeleteAccount={authUser ? handleDeleteAccount : undefined}
           onOpenRecovery={() => {
-            setShowUserProfileModal(false);
+            setShowPlayerProfileModal(false);
             setShowRecoveryModal(true);
           }}
         />

@@ -338,7 +338,7 @@ export const ACHIEVEMENTS_LIST: Achievement[] = [
   },
   {
     id: 'reach_rank_gold',
-    title: 'Liga de Ouro',
+    title: 'Ascensão Dourada',
     description: 'Alcance a categoria Ouro I ou superior.',
     category: 'progression',
     icon: 'Trophy',
@@ -348,7 +348,7 @@ export const ACHIEVEMENTS_LIST: Achievement[] = [
   },
   {
     id: 'reach_rank_diamond',
-    title: 'Liga Diamante',
+    title: 'Mente Diamante',
     description: 'Alcance a categoria Diamante I ou superior.',
     category: 'progression',
     icon: 'Gem',
@@ -370,7 +370,7 @@ export const ACHIEVEMENTS_LIST: Achievement[] = [
   },
   {
     id: 'reach_rank_infinite',
-    title: 'Liga Infinita',
+    title: 'Legado Infinito',
     description: 'Alcance a prestigiada categoria Infinito.',
     category: 'progression',
     icon: 'Infinity',

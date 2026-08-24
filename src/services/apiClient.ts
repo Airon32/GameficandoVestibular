@@ -12,7 +12,7 @@ export class ApiClient {
     };
   }
 
-  public static async issueCompetitiveQuestion(payload: {
+  public static async issueSoloQuestion(payload: {
     operations: string[];
     difficultyScore: number;
   }): Promise<{ success: boolean; question?: any }> {
@@ -63,7 +63,7 @@ export class ApiClient {
   }
 
   /**
-   * Anticheat verification endpoint check
+   * Optional verification for server-issued questions in the player's private session.
    */
   public static async verifyAnswerOnServer(payload: {
     questionId: string;

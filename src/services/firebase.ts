@@ -1,7 +1,6 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import {
-  deleteDoc,
   doc,
   Firestore,
   getDoc,
@@ -57,42 +56,6 @@ function getAuthenticatedUser() {
   return getAuth(getApp()).currentUser;
 }
 
-/** Only these non-sensitive fields are copied to the public directory. */
-function toPublicProfile(state: UserState) {
-  return {
-    id: state.id,
-    username: state.username || `@user_${state.id.slice(0, 6)}`,
-    displayName: state.displayName || state.name || 'Matemático',
-    name: state.displayName || state.name || 'Matemático',
-    avatar: state.avatar || '🦊',
-    bio: (state.bio || '').slice(0, 160),
-    selectedTitle: state.selectedTitle || 'Aprendiz Matemático',
-    privacy: state.privacy || 'public',
-    level: Math.max(1, Number(state.level) || 1),
-    totalXP: Math.max(0, Number(state.totalXP) || 0),
-    weeklyXP: Math.max(0, Number(state.weeklyXP) || 0),
-    currentWeekId: state.currentWeekId || '',
-    leagueTier: state.leagueTier || 'Elite',
-    rank: {
-      fullName: state.rank?.fullName || 'Madeira I',
-      tierName: state.rank?.tierName || 'Madeira',
-      division: state.rank?.division || 1,
-    },
-    streak: {
-      currentStreak: Math.max(0, Number(state.streak?.currentStreak) || 0),
-      maxStreak: Math.max(0, Number(state.streak?.maxStreak) || 0),
-    },
-    maxCombo: Math.max(0, Number(state.maxCombo) || 0),
-    stats: {
-      accuracy: Math.max(0, Math.min(100, Number(state.stats?.accuracy) || 0)),
-      totalQuestions: Math.max(0, Number(state.stats?.totalQuestions) || 0),
-      avgTimeMs: Math.max(0, Number(state.stats?.avgTimeMs) || 0),
-    },
-    achievementsCount: Object.keys(state.achievements || {}).length,
-    updatedAt: Date.now(),
-  };
-}
-
 export class CloudStorageService {
   private static isSyncing = false;
 
@@ -145,7 +108,7 @@ export class CloudStorageService {
     return this.searchProfiles();
   }
 
-  /** Saves the private state and a strictly sanitized public projection. */
+  /** Saves only the authenticated player's private single-player state. */
   public static async saveToCloud(state: UserState): Promise<boolean> {
     const authUser = getAuthenticatedUser();
     if (!state?.id || !authUser || authUser.uid !== state.id) return false;
@@ -163,12 +126,6 @@ export class CloudStorageService {
 
       const batch = writeBatch(firestore);
       batch.set(doc(firestore, 'users', authUser.uid), payload, { merge: true });
-      const publicRef = doc(firestore, 'public_profiles', authUser.uid);
-      if ((payload.privacy || 'public') === 'public') {
-        batch.set(publicRef, toPublicProfile(payload));
-      } else {
-        batch.delete(publicRef);
-      }
       await batch.commit();
       return true;
     } catch (err) {
@@ -177,11 +134,6 @@ export class CloudStorageService {
     } finally {
       this.isSyncing = false;
     }
-  }
-
-  public static async deletePublicProfile(userId: string): Promise<void> {
-    const authUser = getAuthenticatedUser();
-    if (authUser?.uid === userId) await deleteDoc(doc(getDb(), 'public_profiles', userId));
   }
 
   public static getSyncStatus(): boolean {

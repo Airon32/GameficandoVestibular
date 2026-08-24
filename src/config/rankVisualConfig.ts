@@ -146,7 +146,7 @@ export const RANK_VISUAL_CONFIGS: RankVisualConfig[] = [
       { division: 4, roman: 'IV', addedDetailsDescription: 'Placas laterais esculpidas', xpThresholdPercent: 0.22 },
       { division: 5, roman: 'V', addedDetailsDescription: 'Escudo da Montanha Pleno', xpThresholdPercent: 0.27 },
     ],
-    rankLockedPreview: { silhouetteColor: '#3F3F46', teaserText: 'Estrutura competitiva simétrica' },
+    rankLockedPreview: { silhouetteColor: '#3F3F46', teaserText: 'Estrutura de maestria simétrica' },
     rankUnlockedPreview: {
       unlockedBadgeTitle: 'Emblema de Pedra Maciça',
       unlockedFrameTitle: 'Moldura de Rocha Esculpida',
@@ -272,7 +272,7 @@ export const RANK_VISUAL_CONFIGS: RankVisualConfig[] = [
     rankLevelUpAnimation: 'material',
     rankVisualTier: 'metallic',
     rankRarity: 'Incomum',
-    rankDescription: 'O primeiro vislumbre da glória e do reconhecimento competitivo.',
+    rankDescription: 'O primeiro vislumbre da glória conquistada pelo próprio esforço.',
     rankColorTokens: {
       primary: '#CD7F32',
       secondary: '#8B4513',

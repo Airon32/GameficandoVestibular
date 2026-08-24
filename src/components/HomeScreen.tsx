@@ -3,21 +3,12 @@ import {
   Play,
   Flame,
   Trophy,
-  Users,
   BarChart2,
-  Calendar,
   Zap,
   Target,
-  ShieldAlert,
-  Clock,
   Sparkles,
-  Swords,
   ChevronRight,
-  Award,
   TrendingUp,
-  LogIn,
-  CheckCircle2,
-  CircleDot,
   Shield,
   GraduationCap,
   Layers,
@@ -50,12 +41,8 @@ interface HomeScreenProps {
   onOpenErrorNotebook?: () => void;
   onOpenSpacedRepetition?: () => void;
   onSelectSubjectDetail?: (subjectId: SubjectId) => void;
-  onNavigateTab: (tab: 'game' | 'social' | 'stats' | 'calendar' | 'achievements') => void;
+  onNavigateTab: (tab: 'game' | 'stats' | 'calendar' | 'achievements') => void;
   onOpenProfile: () => void;
-  onOpenAuth: () => void;
-  onOpenNotifications: () => void;
-  unreadNotificationsCount?: number;
-  isLoggedIn?: boolean;
   onOpenRecovery?: () => void;
 }
 
@@ -71,10 +58,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onSelectSubjectDetail,
   onNavigateTab,
   onOpenProfile,
-  onOpenAuth,
-  onOpenNotifications,
-  unreadNotificationsCount = 0,
-  isLoggedIn = false,
   onOpenRecovery,
 }) => {
   const [viewMode, setViewMode] = useState<'hub' | 'math'>('hub');
@@ -97,8 +80,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const isDailyGoalDone = todayQuestions >= dailyGoal;
   const dailyPercent = Math.min(100, Math.round((todayQuestions / dailyGoal) * 100));
 
-  // Current League details
-  const leagueTierName = userState.leagueTier || 'Elite';
+  // Personal weekly pace, without external comparison.
   const weeklyXP = userState.weeklyXP || 0;
 
   // Time-based greeting
@@ -316,7 +298,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             </div>
           </RankProfileTheme>
 
-          {/* 2. Daily Goal & League Status Widgets */}
+          {/* 2. Personal consistency widgets */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Daily Goal Card */}
             <div className="rounded-3xl bg-[#131313] border border-[#222] p-5 flex items-center justify-between gap-4">
@@ -356,30 +338,30 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               </div>
             </div>
 
-            {/* League Quick Glance Card */}
-            <div
-              onClick={() => onNavigateTab('social')}
-              className="rounded-3xl bg-[#131313] border border-[#222] hover:border-[#333] p-5 flex items-center justify-between gap-4 cursor-pointer transition group"
+            <button
+              type="button"
+              onClick={() => onNavigateTab('calendar')}
+              className="rounded-3xl bg-[#131313] border border-[#222] hover:border-purple-500/40 p-5 flex items-center justify-between gap-4 cursor-pointer transition group text-left"
             >
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <Swords className="w-4 h-4 text-purple-400" />
+                  <TrendingUp className="w-4 h-4 text-purple-400" />
                   <span className="text-xs font-bold uppercase tracking-wider text-[#888]">
-                    Liga Semanal
+                    Ritmo Semanal
                   </span>
                 </div>
                 <div className="text-xl font-black text-white group-hover:text-purple-400 transition">
-                  {leagueTierName}
+                  Sua evolução, no seu ritmo
                 </div>
                 <span className="text-xs text-[#666] block">
-                  {weeklyXP} XP acumulados esta semana
+                  {weeklyXP.toLocaleString()} XP conquistados nesta semana
                 </span>
               </div>
 
               <div className="w-10 h-10 rounded-2xl bg-purple-950/40 border border-purple-500/30 flex items-center justify-center text-purple-400 group-hover:scale-110 transition">
                 <ChevronRight className="w-5 h-5" />
               </div>
-            </div>
+            </button>
           </div>
 
           {/* 3. Training Modes Grid */}
@@ -477,17 +459,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             </button>
 
             <button
-              onClick={() => onNavigateTab('social')}
+              onClick={() => setIsJourneyOpen(true)}
               className="rounded-2xl bg-[#131313] border border-[#222] hover:border-[#333] p-4 flex flex-col gap-1 text-left transition cursor-pointer group"
             >
               <div className="flex items-center justify-between text-[#888] group-hover:text-orange-400 transition">
-                <span className="text-[10px] uppercase font-bold tracking-wider">Amigos & Duelos</span>
-                <Users className="w-4 h-4" />
+                <span className="text-[10px] uppercase font-bold tracking-wider">Ranks Descobertos</span>
+                <Shield className="w-4 h-4" />
               </div>
               <span className="text-xl sm:text-2xl font-black text-white font-mono tabular-nums">
-                {userState.friends?.length || 0}
+                {(userState.highestUnlockedRank ?? rank.tierIndex ?? 0) + 1} / 30
               </span>
-              <span className="text-[10px] text-[#666]">Desafiar para 1v1</span>
+              <span className="text-[10px] text-[#666]">Abrir jornada de prestígio</span>
             </button>
           </div>
         </div>

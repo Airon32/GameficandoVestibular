@@ -25,7 +25,7 @@ export default defineConfig(() => {
             if (moduleId.includes('/node_modules/katex')) return 'math-renderer';
             if (moduleId.includes('/src/config/rankVisualConfig')) return 'rank-visuals';
             if (moduleId.includes('/src/data/questionBank') || moduleId.includes('/src/data/studyGuidesData')) return 'learning-content';
-            if (moduleId.includes('/src/components/SocialHub') || moduleId.includes('/src/components/UserProfileModal')) return 'social-ui';
+            if (moduleId.includes('/src/components/PlayerProfileModal') || moduleId.includes('/src/components/RankJourneyModal')) return 'profile-ui';
             if (moduleId.includes('/src/components/StudyGuidesScreen') || moduleId.includes('/src/components/EducationalGameScreen')) return 'learning-ui';
             if (moduleId.includes('/src/components/InfiniteTrainingScreen') || moduleId.includes('/src/components/SimuladoScreen')) return 'training-ui';
           },

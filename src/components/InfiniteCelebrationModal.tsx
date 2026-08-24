@@ -131,7 +131,7 @@ export const InfiniteCelebrationModal: React.FC<InfiniteCelebrationModalProps> =
         </div>
 
         <p className="text-xs text-[#999] mb-5 leading-relaxed">
-          Você superou todas as 30 ligas competitivas e consolidou seu nome entre a elite suprema. A partir de agora, cada novo nível avança o sistema de <strong className="text-white">Ascensão Infinita</strong>.
+          Você atravessou sozinho todos os 30 ranks de maestria e transformou constância em excelência. A partir de agora, cada novo nível avança o sistema de <strong className="text-white">Ascensão Infinita</strong>.
         </p>
 
         <button

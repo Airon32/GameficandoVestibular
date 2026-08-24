@@ -1,24 +1,14 @@
 import React from 'react';
 import {
   Home,
-  Award,
   BarChart2,
   Calendar,
-  Check,
-  Cloud,
-  CloudOff,
-  Flame,
-  Loader2,
   Play,
   Settings,
   Smartphone,
   Sparkles,
   Trophy,
-  User,
-  Users,
-  Bell,
   LogIn,
-  Swords,
 } from 'lucide-react';
 import { UserState } from '../types';
 import { RankBadge } from './RankBadge';
@@ -26,19 +16,13 @@ import { RankFrame } from './RankFrame';
 
 interface HeaderProps {
   userState: UserState;
-  activeTab: 'home' | 'game' | 'social' | 'stats' | 'calendar' | 'achievements';
-  onSelectTab: (tab: 'home' | 'game' | 'social' | 'stats' | 'calendar' | 'achievements') => void;
+  activeTab: 'home' | 'game' | 'stats' | 'calendar' | 'achievements';
+  onSelectTab: (tab: 'home' | 'game' | 'stats' | 'calendar' | 'achievements') => void;
   onOpenSettings: () => void;
   onOpenProfile: () => void;
-  onOpenTests: () => void;
   onOpenAndroidInstall: () => void;
   onOpenAuth: () => void;
-  onOpenNotifications: () => void;
-  unreadNotificationsCount?: number;
   isLoggedIn?: boolean;
-  isCloudSyncing?: boolean;
-  lastSyncedAt?: number;
-  onTriggerManualSync?: () => void;
   onOpenRecovery?: () => void;
 }
 
@@ -48,18 +32,12 @@ export const Header: React.FC<HeaderProps> = ({
   onSelectTab,
   onOpenSettings,
   onOpenProfile,
-  onOpenTests,
   onOpenAndroidInstall,
   onOpenAuth,
-  onOpenNotifications,
-  unreadNotificationsCount = 0,
   isLoggedIn = false,
-  isCloudSyncing = false,
-  lastSyncedAt,
-  onTriggerManualSync,
   onOpenRecovery,
 }) => {
-  const { level, totalXP, currentLevelXP, xpForNextLevel, levelProgressPercent, rank, streak } = userState;
+  const { level, currentLevelXP, xpForNextLevel, levelProgressPercent, rank, streak } = userState;
   const todayStr = new Date().toISOString().split('T')[0];
   const todayActivity = userState.stats.dailyActivity[todayStr];
   const todayCount = todayActivity ? todayActivity.correctCount : 0;
@@ -72,9 +50,9 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Left: User Identity, Rank & Level */}
         <div className="flex items-center justify-between w-full md:w-auto gap-2 sm:gap-4">
           <button
-            onClick={isLoggedIn ? onOpenProfile : onOpenAuth}
+            onClick={onOpenProfile}
             className="flex items-center gap-2 sm:gap-3 text-left group hover:opacity-90 transition cursor-pointer min-w-0"
-            title={isLoggedIn ? 'Abrir Perfil e Estatísticas' : 'Entrar na sua Conta'}
+            title="Abrir meu perfil e jornada de ranks"
           >
             <div className="relative shrink-0">
               <RankFrame rank={rank} size="sm">
@@ -130,7 +108,7 @@ export const Header: React.FC<HeaderProps> = ({
             NUMERIS
           </span>
           <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#f97316] bg-orange-950/40 px-2 py-0.5 rounded border border-orange-500/30">
-            COMPETITIVE
+            JORNADA SOLO
           </span>
         </button>
 
@@ -182,19 +160,6 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
 
             <button
-              onClick={() => onSelectTab('social')}
-              className={`p-1.5 sm:px-3 sm:py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider flex items-center gap-1 transition cursor-pointer relative ${
-                activeTab === 'social'
-                  ? 'bg-orange-600 text-white shadow-md shadow-orange-900/30'
-                  : 'text-[#888] hover:text-white hover:bg-[#1a1a1a]'
-              }`}
-              title="Social & Amigos"
-            >
-              <Users className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">Social</span>
-            </button>
-
-            <button
               onClick={() => onSelectTab('stats')}
               className={`p-1.5 sm:px-3 sm:py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider flex items-center gap-1 transition cursor-pointer ${
                 activeTab === 'stats'
@@ -221,19 +186,8 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           </div>
 
-          {/* Action Buttons: Notifications, Auth, Android, Settings */}
+          {/* Account and local app actions */}
           <div className="flex items-center gap-0.5 sm:gap-1.5 shrink-0">
-            {/* Notifications Button */}
-            <button
-              onClick={onOpenNotifications}
-              className="bg-[#222] p-1.5 sm:p-2 rounded-lg cursor-pointer hover:bg-[#333] text-[#888] hover:text-white transition relative"
-              title="Notificações"
-            >
-              <Bell className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-              {unreadNotificationsCount > 0 && (
-                <span className="w-2 h-2 bg-orange-500 rounded-full absolute top-1 right-1 border border-[#111]" />
-              )}
-            </button>
 
             {!isLoggedIn && (
               <button

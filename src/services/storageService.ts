@@ -5,7 +5,7 @@ import { PROGRESSION_VERSION } from '../config/progressionConfig';
 import { AchievementEngine } from '../engines/AchievementEngine';
 import { SyncEvent, UserState, OperationType } from '../types';
 import { CloudStorageService } from './firebase';
-import { SocialService } from './socialService';
+import { getCurrentWeekId } from '../utils/progressPeriod';
 
 const BASE_STORAGE_KEY = 'mathcore_user_state_v2';
 const ACTIVE_USER_ID_KEY = 'mathcore_active_uid_v2';
@@ -40,7 +40,7 @@ export function createDefaultUserState(
   const initialRank = RankManager.getRankForLevel(1);
   const initialLevelData = LevelManager.getLevelDataFromTotalXP(0);
   const uid = customUid || getActiveUserId();
-  const weekId = SocialService.getWeekIdentifier();
+  const weekId = getCurrentWeekId();
 
   return {
     id: uid,
@@ -50,12 +50,10 @@ export function createDefaultUserState(
     email: email || '',
     selectedTitle: 'Aprendiz Matemático',
     avatar: '🦊',
-    privacy: 'public',
     level: initialLevelData.level,
     totalXP: 0,
     weeklyXP: 0,
     currentWeekId: weekId,
-    leagueTier: 'Elite',
     currentLevelXP: initialLevelData.currentLevelXP,
     xpForNextLevel: initialLevelData.xpForNextLevel,
     levelProgressPercent: initialLevelData.levelProgressPercent,
@@ -68,12 +66,6 @@ export function createDefaultUserState(
     },
     combo: 0,
     maxCombo: 0,
-    challengeStats: {
-      totalWins: 0,
-      totalLosses: 0,
-      totalDraws: 0,
-      matchesPlayed: 0,
-    },
     streakStats: {
       xpFromStreaksTotal: 0,
       highestMultiplierReached: 1.0,
@@ -126,7 +118,7 @@ export class StorageService {
    * Safely merges two UserStates, ensuring NO achievements, titles, XP, or stats are ever lost.
    */
   public static mergeUserStates(local: UserState, remote: UserState): UserState {
-    const currentWeekId = SocialService.getWeekIdentifier();
+    const currentWeekId = getCurrentWeekId();
 
     // 1. Merge achievements (union of all unlocked timestamps)
     const mergedAchievements: Record<string, number> = {
@@ -202,14 +194,6 @@ export class StorageService {
     const maxStreak = Math.max(local.streak?.maxStreak || 0, remote.streak?.maxStreak || 0, local.streak?.currentStreak || 0, remote.streak?.currentStreak || 0);
     const currentStreak = Math.max(local.streak?.currentStreak || 0, remote.streak?.currentStreak || 0);
 
-    // Merge Challenge Stats
-    const mergedChallengeStats = {
-      totalWins: Math.max(local.challengeStats?.totalWins || 0, remote.challengeStats?.totalWins || 0),
-      totalLosses: Math.max(local.challengeStats?.totalLosses || 0, remote.challengeStats?.totalLosses || 0),
-      totalDraws: Math.max(local.challengeStats?.totalDraws || 0, remote.challengeStats?.totalDraws || 0),
-      matchesPlayed: Math.max(local.challengeStats?.matchesPlayed || 0, remote.challengeStats?.matchesPlayed || 0),
-    };
-
     const mergedState: UserState = {
       id: remote.id || local.id || getActiveUserId(),
       username: remote.username || local.username,
@@ -219,12 +203,10 @@ export class StorageService {
       selectedTitle: remote.selectedTitle || local.selectedTitle || 'Aprendiz Matemático',
       avatar: remote.avatar || local.avatar || '🦊',
       bio: remote.bio || local.bio || '',
-      privacy: remote.privacy || local.privacy || 'public',
       level: levelData.level,
       totalXP: mergedXP,
       weeklyXP: mergedWeeklyXP,
       currentWeekId,
-      leagueTier: remote.leagueTier || local.leagueTier || 'Elite',
       currentLevelXP: levelData.currentLevelXP,
       xpForNextLevel: levelData.xpForNextLevel,
       levelProgressPercent: levelData.levelProgressPercent,
@@ -239,7 +221,6 @@ export class StorageService {
       },
       combo: Math.max(local.combo || 0, remote.combo || 0),
       maxCombo,
-      challengeStats: mergedChallengeStats,
       streakStats: {
         xpFromStreaksTotal: Math.max(
           local.streakStats?.xpFromStreaksTotal || 0,
@@ -330,7 +311,7 @@ export class StorageService {
         parsed.rank = RankManager.getRankForLevel(levelData.level, effectiveHighest);
 
         // Check weekly XP freshness
-        const currentWeekId = SocialService.getWeekIdentifier();
+        const currentWeekId = getCurrentWeekId();
         if (parsed.currentWeekId !== currentWeekId) {
           parsed.currentWeekId = currentWeekId;
           parsed.weeklyXP = 0;

@@ -1,163 +1,37 @@
 {
+  "mode": "single-player",
   "entities": {
-    "UserProfile": {
-      "title": "Perfil e Progresso do Jogador",
-      "description": "Armazena todos os dados de progresso, XP, níveis, conquistas, sequências diárias e estatísticas do jogador.",
+    "PlayerSave": {
+      "title": "Progresso individual do estudante",
+      "description": "Backup privado de níveis, XP, ranks, apostilas, simulados e estatísticas.",
       "type": "object",
       "properties": {
-        "id": { "type": "string", "description": "Identificador único do usuário (Firebase Auth UID)" },
-        "username": { "type": "string", "description": "Nome de usuário único iniciado com @ (ex: @aironcavalcante)" },
-        "displayName": { "type": "string", "description": "Nome de exibição público" },
-        "email": { "type": "string", "description": "Email do usuário (privado)" },
-        "avatar": { "type": "string", "description": "Emoji ou ícone de avatar" },
-        "bio": { "type": "string", "description": "Biografia curta do perfil" },
-        "selectedTitle": { "type": "string", "description": "Título honorífico equipado" },
-        "privacy": { "type": "string", "description": "Nível de privacidade: public, friends_only, private" },
-        "level": { "type": "number", "description": "Nível atual de maestria" },
-        "totalXP": { "type": "number", "description": "Total acumulado de XP" },
-        "weeklyXP": { "type": "number", "description": "XP acumulado na liga da semana atual" },
-        "currentWeekId": { "type": "string", "description": "Identificador da semana corrente (ex: 2026-W34)" },
-        "leagueTier": { "type": "string", "description": "Divisão da liga semanal (Iniciante, Competidor, Elite, Campeão, Mestre, Lenda, Suprema)" },
-        "currentLevelXP": { "type": "number", "description": "XP no nível atual" },
-        "xpForNextLevel": { "type": "number", "description": "XP necessário para o próximo nível" },
-        "levelProgressPercent": { "type": "number", "description": "Porcentagem de conclusão do nível" },
-        "rank": { "type": "object", "description": "Informações do Rank permanente atual" },
-        "streak": { "type": "object", "description": "Dados da sequência de dias ativos" },
-        "combo": { "type": "number", "description": "Combo atual de acertos" },
-        "maxCombo": { "type": "number", "description": "Recorde de combo" },
-        "challengeStats": { "type": "object", "description": "Vitórias, derrotas e empates em desafios diretos" },
-        "stats": { "type": "object", "description": "Estatísticas agregadas por operação e diárias" },
-        "achievements": { "type": "object", "description": "Mapa de conquistas desbloqueadas" },
-        "unlockedTitles": { "type": "array", "description": "Lista de títulos desbloqueados" },
-        "settings": { "type": "object", "description": "Configurações de som, vibração e metas" },
-        "createdAt": { "type": "number", "description": "Timestamp de criação" },
-        "updatedAt": { "type": "number", "description": "Timestamp da última sincronização" }
+        "id": { "type": "string", "description": "Firebase Auth UID do proprietário" },
+        "displayName": { "type": "string", "description": "Nome escolhido pelo estudante" },
+        "avatar": { "type": "string", "description": "Avatar da jornada" },
+        "bio": { "type": "string", "description": "Manifesto pessoal" },
+        "selectedTitle": { "type": "string", "description": "Título de conquista equipado" },
+        "level": { "type": "number", "description": "Nível de maestria atual" },
+        "totalXP": { "type": "number", "description": "XP pessoal acumulado" },
+        "weeklyXP": { "type": "number", "description": "XP pessoal conquistado na semana" },
+        "rank": { "type": "object", "description": "Rank permanente atual" },
+        "stats": { "type": "object", "description": "Desempenho acadêmico individual" },
+        "achievements": { "type": "object", "description": "Conquistas desbloqueadas" },
+        "updatedAt": { "type": "number", "description": "Última atualização" }
       },
-      "required": ["id", "username", "displayName", "level", "totalXP", "rank", "streak", "stats"]
-    },
-    "UsernameReservation": {
-      "title": "Reserva de Username Único",
-      "description": "Garante unicidade global de nomes de usuário",
-      "type": "object",
-      "properties": {
-        "username": { "type": "string", "description": "Username em minúsculas" },
-        "userId": { "type": "string", "description": "ID do usuário proprietário" },
-        "createdAt": { "type": "number", "description": "Data de reserva" }
-      },
-      "required": ["username", "userId"]
-    },
-    "FriendRequest": {
-      "title": "Solicitação de Amizade",
-      "description": "Pedido bilateral de amizade entre dois usuários",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string", "description": "ID da solicitação" },
-        "fromUserId": { "type": "string", "description": "ID do solicitante" },
-        "fromUsername": { "type": "string", "description": "Username do solicitante" },
-        "fromDisplayName": { "type": "string", "description": "Nome de exibição do solicitante" },
-        "fromAvatar": { "type": "string", "description": "Avatar do solicitante" },
-        "toUserId": { "type": "string", "description": "ID do destinatário" },
-        "toUsername": { "type": "string", "description": "Username do destinatário" },
-        "status": { "type": "string", "description": "pending, accepted, declined" },
-        "createdAt": { "type": "number", "description": "Data de envio" },
-        "updatedAt": { "type": "number", "description": "Data de resposta" }
-      },
-      "required": ["fromUserId", "toUserId", "status"]
-    },
-    "Friendship": {
-      "title": "Amizade Estabelecida",
-      "description": "Registro de amizade bilateral",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string", "description": "ID do vínculo" },
-        "userAId": { "type": "string", "description": "ID do primeiro usuário" },
-        "userBId": { "type": "string", "description": "ID do segundo usuário" },
-        "createdAt": { "type": "number", "description": "Data de início da amizade" }
-      },
-      "required": ["userAId", "userBId"]
-    },
-    "BlockedUser": {
-      "title": "Usuário Bloqueado",
-      "description": "Registro de bloqueio entre jogadores",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string", "description": "ID do bloqueio" },
-        "blockerId": { "type": "string", "description": "ID de quem bloqueou" },
-        "blockedId": { "type": "string", "description": "ID de quem foi bloqueado" },
-        "createdAt": { "type": "number", "description": "Data do bloqueio" }
-      },
-      "required": ["blockerId", "blockedId"]
-    },
-    "Challenge": {
-      "title": "Desafio Matemático Direto",
-      "description": "Duelo assíncrono de 20 questões idênticas entre dois amigos",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string", "description": "ID do desafio" },
-        "challengerId": { "type": "string", "description": "ID do desafiante" },
-        "challengerUsername": { "type": "string", "description": "Username do desafiante" },
-        "challengerDisplayName": { "type": "string", "description": "Nome do desafiante" },
-        "challengerAvatar": { "type": "string", "description": "Avatar do desafiante" },
-        "opponentId": { "type": "string", "description": "ID do desafiado" },
-        "opponentUsername": { "type": "string", "description": "Username do desafiado" },
-        "opponentDisplayName": { "type": "string", "description": "Nome do desafiado" },
-        "opponentAvatar": { "type": "string", "description": "Avatar do desafiado" },
-        "status": { "type": "string", "description": "pending, accepted, in_progress, completed, declined, expired" },
-        "questionCount": { "type": "number", "description": "Quantidade de questões (ex: 20)" },
-        "questions": { "type": "array", "description": "Lista de questões idênticas para ambos os jogadores" },
-        "challengerResult": { "type": "object", "description": "Resultado do desafiante (acertos, tempo, precisão)" },
-        "opponentResult": { "type": "object", "description": "Resultado do oponente (acertos, tempo, precisão)" },
-        "winnerId": { "type": "string", "description": "ID do vencedor ou 'draw'" },
-        "createdAt": { "type": "number", "description": "Timestamp de criação" },
-        "expiresAt": { "type": "number", "description": "Timestamp de expiração" }
-      },
-      "required": ["challengerId", "opponentId", "status", "questions"]
-    },
-    "AppNotification": {
-      "title": "Notificação Interna",
-      "description": "Notificações de amizade, desafios e promoções de liga",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string", "description": "ID da notificação" },
-        "userId": { "type": "string", "description": "Destinatário" },
-        "type": { "type": "string", "description": "Tipo da notificação" },
-        "title": { "type": "string", "description": "Título" },
-        "message": { "type": "string", "description": "Texto descritivo" },
-        "data": { "type": "object", "description": "Metadados adicionais" },
-        "isRead": { "type": "boolean", "description": "Status de leitura" },
-        "createdAt": { "type": "number", "description": "Data de criação" }
-      },
-      "required": ["userId", "type", "title", "message", "isRead"]
+      "required": ["id", "level", "totalXP", "rank", "stats"]
     }
   },
   "firestore": {
     "users/{userId}": {
-      "schema": { "$ref": "#/entities/UserProfile" },
-      "description": "Documento raiz de cada jogador com progresso e perfil público"
+      "schema": { "$ref": "#/entities/PlayerSave" },
+      "description": "Documento privado acessível somente pelo próprio estudante"
     },
-    "usernames/{username}": {
-      "schema": { "$ref": "#/entities/UsernameReservation" },
-      "description": "Reserva de nomes de usuário únicos"
+    "solo_questions/{questionId}": {
+      "description": "Questões temporárias emitidas pelo servidor; sem acesso direto do cliente"
     },
-    "friend_requests/{requestId}": {
-      "schema": { "$ref": "#/entities/FriendRequest" },
-      "description": "Solicitações pendentes de amizade"
-    },
-    "friendships/{friendshipId}": {
-      "schema": { "$ref": "#/entities/Friendship" },
-      "description": "Amizades ativas entre usuários"
-    },
-    "blocked_users/{blockId}": {
-      "schema": { "$ref": "#/entities/BlockedUser" },
-      "description": "Bloqueios entre usuários"
-    },
-    "challenges/{challengeId}": {
-      "schema": { "$ref": "#/entities/Challenge" },
-      "description": "Desafios diretos entre jogadores"
-    },
-    "notifications/{notificationId}": {
-      "schema": { "$ref": "#/entities/AppNotification" },
-      "description": "Notificações do aplicativo"
+    "processed_events/{eventId}": {
+      "description": "Controle privado de duplicidade com expiração automática"
     }
   }
 }

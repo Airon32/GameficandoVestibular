@@ -266,7 +266,6 @@ export interface InfiniteSessionConfig {
   targetCount?: number; // 5, 10, 25
   timeLimitSeconds?: number; // 300 (5m), 600 (10m), 1200 (20m)
   difficultyMode?: 'adaptive' | 'easy' | 'medium' | 'hard' | 'extreme';
-  isCompetitive?: boolean;
   allowTimerPerQuestion?: boolean;
 }
 
@@ -681,15 +680,6 @@ export interface InfiniteStats {
   totalXPEarned: number;
 }
 
-export interface ChallengeStats {
-  totalWins: number;
-  totalLosses: number;
-  totalDraws: number;
-  matchesPlayed: number;
-}
-
-export type ProfilePrivacy = 'public' | 'friends_only' | 'private';
-
 export interface UserState {
   id: string; // Firebase Auth UID
   username?: string; // e.g. "@aironcavalcante"
@@ -699,12 +689,10 @@ export interface UserState {
   avatar: string;
   bio?: string;
   selectedTitle: string;
-  privacy?: ProfilePrivacy;
   level: number;
   totalXP: number;
-  weeklyXP?: number; // Weekly league points
+  weeklyXP?: number; // Personal XP earned in the current week
   currentWeekId?: string; // e.g. "2026-W34"
-  leagueTier?: string; // e.g. "Elite"
   currentLevelXP: number;
   xpForNextLevel: number;
   levelProgressPercent: number;
@@ -712,7 +700,6 @@ export interface UserState {
   streak: StreakData;
   combo: number;
   maxCombo: number;
-  challengeStats?: ChallengeStats;
   streakStats?: StreakStats;
   infiniteStats?: InfiniteStats;
   stats: {
@@ -762,143 +749,6 @@ export interface UserState {
   recentHistory?: RecentAnswerRecord[];
   createdAt: number;
   updatedAt: number;
-}
-
-export interface FriendRequest {
-  id: string;
-  fromUserId: string;
-  fromUsername: string;
-  fromDisplayName: string;
-  fromAvatar: string;
-  toUserId: string;
-  toUsername: string;
-  status: 'pending' | 'accepted' | 'declined';
-  createdAt: number;
-  updatedAt?: number;
-}
-
-export interface Friendship {
-  id: string;
-  userAId: string;
-  userBId: string;
-  requestId?: string;
-  acceptedBy?: string;
-  createdAt: number;
-}
-
-export interface BlockedUser {
-  id: string;
-  blockerId: string;
-  blockedId: string;
-  createdAt: number;
-}
-
-export interface FriendProfileSummary {
-  userId: string;
-  username: string;
-  displayName: string;
-  avatar: string;
-  bio?: string;
-  selectedTitle: string;
-  level: number;
-  totalXP: number;
-  weeklyXP: number;
-  rankFullName: string;
-  currentStreak: number;
-  maxStreak: number;
-  maxCombo: number;
-  accuracy: number;
-  totalQuestions: number;
-  avgTimeMs: number;
-  achievementsCount: number;
-  privacy: ProfilePrivacy;
-  bestOperation?: OperationType;
-  worstOperation?: OperationType;
-  bestSubject?: SubjectId;
-  subjectMasterySummary?: Record<string, number>; // subjectId -> masteryPercent
-  headToHead?: {
-    wins: number;
-    losses: number;
-    draws: number;
-    totalMatches: number;
-    lastMatchResult?: 'win' | 'loss' | 'draw';
-  };
-}
-
-export interface LeagueMember {
-  userId: string;
-  username: string;
-  displayName: string;
-  avatar: string;
-  weeklyXP: number;
-  tierName: string;
-  isCurrentUser?: boolean;
-}
-
-export interface WeeklyLeagueInfo {
-  weekId: string;
-  tierName: string; // Iniciante, Competidor, Elite, Campeão, Mestre, Lenda, Suprema
-  tierLevel: number; // 1 to 7
-  userRankInCohort: number;
-  totalMembers: number;
-  promotionThreshold: number; // Top 5
-  relegationThreshold: number; // Bottom 5
-  members: LeagueMember[];
-  timeRemainingStr: string;
-}
-
-export interface ChallengePlayerResult {
-  userId: string;
-  username: string;
-  displayName: string;
-  correctCount: number;
-  totalQuestions: number;
-  totalTimeMs: number;
-  avgTimeMs: number;
-  accuracy: number;
-  answers: Array<{
-    questionId: string;
-    expressionString: string;
-    userAnswer: number;
-    correctAnswer?: number;
-    isCorrect?: boolean;
-    timeTakenMs: number;
-  }>;
-  completedAt: number;
-}
-
-export interface Challenge {
-  id: string;
-  challengerId: string;
-  challengerUsername: string;
-  challengerDisplayName: string;
-  challengerAvatar: string;
-  opponentId: string;
-  opponentUsername: string;
-  opponentDisplayName: string;
-  opponentAvatar: string;
-  status: 'pending' | 'accepted' | 'in_progress' | 'completed' | 'declined' | 'expired';
-  subjectId?: SubjectId;
-  gameMode?: GameMode;
-  questionCount: number;
-  questions: Array<Omit<Question, 'correctAnswer'> & { correctAnswer?: never }>; // Identical, without exposing the answer key
-  educationalQuestions?: EducationalQuestion[];
-  challengerResult?: ChallengePlayerResult;
-  opponentResult?: ChallengePlayerResult;
-  winnerId?: string | 'draw';
-  createdAt: number;
-  expiresAt: number;
-}
-
-export interface AppNotification {
-  id: string;
-  userId: string;
-  type: 'friend_request' | 'friend_accepted' | 'challenge_received' | 'challenge_completed' | 'league_promotion' | 'streak_milestone';
-  title: string;
-  message: string;
-  data?: any;
-  isRead: boolean;
-  createdAt: number;
 }
 
 export interface XPAuditEvent {
