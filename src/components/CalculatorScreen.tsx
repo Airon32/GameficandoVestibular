@@ -171,7 +171,7 @@ export const CalculatorScreen: React.FC<CalculatorScreenProps> = ({
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto flex flex-col items-center justify-center relative px-3 sm:px-6 py-2 select-none">
+    <div className="w-full max-w-5xl mx-auto flex flex-1 min-h-full flex-col items-center justify-start relative px-3 sm:px-6 pt-1 sm:pt-2 pb-0 select-none">
       {/* Discreet Milestone Toast Notification */}
       {milestoneToast && (
         <div className="absolute top-2 z-40 animate-bounce transition-all">
@@ -185,7 +185,7 @@ export const CalculatorScreen: React.FC<CalculatorScreenProps> = ({
       )}
 
       {/* Top Controls: Game Mode Bar & Survival Lives */}
-      <div className="w-full max-w-xl flex items-center justify-between gap-2 sm:gap-3 mb-3 z-10">
+      <div className="calculator-top-controls w-full max-w-xl flex items-center justify-between gap-2 sm:gap-3 mb-3 z-10">
         <div className="flex items-center gap-2">
           {onGoHome && (
             <button
@@ -243,7 +243,7 @@ export const CalculatorScreen: React.FC<CalculatorScreenProps> = ({
       </div>
 
       {/* Main Math HUD & Display Grid */}
-      <div className="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-8 items-center z-10 mb-4">
+      <div className="calculator-main-grid w-full max-w-4xl grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-8 items-center z-10 mb-4">
         {/* Left HUD: Combo & Progressive Streak Multiplier */}
         <div className="hidden lg:flex lg:col-span-3 flex-col gap-5">
           <div className="flex flex-col bg-[#111] p-3.5 rounded-2xl border border-[#222]">
@@ -285,7 +285,7 @@ export const CalculatorScreen: React.FC<CalculatorScreenProps> = ({
         {/* Center: Math Question & Answer Visor */}
         <div className="lg:col-span-6 flex flex-col items-center w-full max-w-xl mx-auto">
           {/* Minimalist Glowing Timer Bar */}
-          <div className="w-full h-1 sm:h-1.5 bg-[#1a1a1a] rounded-full mb-5 overflow-hidden border border-[#222]">
+          <div className="calculator-timer-bar w-full h-1 sm:h-1.5 bg-[#1a1a1a] rounded-full mb-5 overflow-hidden border border-[#222]">
             <div
               className={`h-full transition-all duration-100 ease-linear ${
                 isUrgent
@@ -297,7 +297,7 @@ export const CalculatorScreen: React.FC<CalculatorScreenProps> = ({
           </div>
 
           {/* The Mathematical Expression with Adaptive Typography */}
-          <div className="relative w-full flex flex-col items-center min-h-[110px] sm:min-h-[140px] justify-center">
+          <div className="calculator-question-zone relative w-full flex flex-col items-center min-h-[110px] sm:min-h-[140px] justify-center">
             <div className="py-2 sm:py-3 text-center w-full px-2">
               <h2
                 className={`${getDynamicFontSizeClass()} font-black leading-tight tracking-tight text-white mb-1 font-mono transition-all duration-200`}
@@ -312,9 +312,9 @@ export const CalculatorScreen: React.FC<CalculatorScreenProps> = ({
             </div>
 
             {/* Answer Display Box */}
-            <div className="relative w-full max-w-lg md:max-w-xl group my-2">
+            <div className="calculator-answer-wrapper relative w-full max-w-lg md:max-w-xl group my-2">
               <div className="absolute -inset-1 bg-gradient-to-r from-orange-600 to-orange-400 rounded-2xl sm:rounded-3xl blur opacity-20 group-hover:opacity-40 transition" />
-              <div className="relative bg-[#111] border-2 border-[#333] rounded-2xl sm:rounded-3xl p-4 sm:p-6 flex items-center justify-center min-h-[80px] sm:min-h-[96px] shadow-2xl">
+              <div className="calculator-answer-box relative bg-[#111] border-2 border-[#333] rounded-2xl sm:rounded-3xl p-4 sm:p-6 flex items-center justify-center min-h-[80px] sm:min-h-[96px] shadow-2xl">
                 <span className="text-4xl sm:text-5xl md:text-6xl font-mono font-black tracking-widest text-white tabular-nums">
                   {typedInput || <span className="text-[#333]">0</span>}
                   <span className="animate-pulse text-orange-500 font-light ml-1">|</span>
@@ -401,7 +401,7 @@ export const CalculatorScreen: React.FC<CalculatorScreenProps> = ({
       </div>
 
       {/* Mobile/Tablet Compact HUD Row with Multiplier */}
-      <div className="lg:hidden w-full max-w-lg sm:max-w-xl md:max-w-2xl flex items-center justify-between px-3 sm:px-4 mb-3 text-center bg-[#111] py-2 rounded-2xl border border-[#222]">
+      <div className="calculator-mobile-hud lg:hidden w-full max-w-lg sm:max-w-xl md:max-w-2xl flex items-center justify-between px-3 sm:px-4 mb-3 text-center bg-[#111] py-2 rounded-2xl border border-[#222]">
         <div>
           <span className="block text-[9px] uppercase tracking-[0.2em] text-[#666] font-bold">Sequência</span>
           <div className="flex items-center justify-center gap-1">
@@ -428,7 +428,7 @@ export const CalculatorScreen: React.FC<CalculatorScreenProps> = ({
       </div>
 
       {/* Integrated Bold Typography Keypad */}
-      <div className="w-full max-w-lg sm:max-w-xl md:max-w-2xl z-10">
+      <div className="w-full max-w-lg sm:max-w-xl md:max-w-2xl z-10 mt-auto pt-1.5 sm:pt-4 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
         <VirtualKeypad
           onDigitPress={handleDigitPress}
           onDeletePress={handleDeletePress}
@@ -443,4 +443,3 @@ export const CalculatorScreen: React.FC<CalculatorScreenProps> = ({
     </div>
   );
 };
-

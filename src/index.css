@@ -28,3 +28,54 @@
   background: #f97316;
 }
 
+/* Keep the complete training keypad inside short phone viewports. */
+@media (max-width: 639px) and (max-height: 780px) {
+  .calculator-top-controls {
+    margin-bottom: 0.25rem;
+  }
+
+  .calculator-main-grid {
+    gap: 0.25rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .calculator-timer-bar {
+    margin-bottom: 0.5rem;
+  }
+
+  .calculator-question-zone {
+    min-height: 0;
+  }
+
+  .calculator-question-zone h2 {
+    font-size: 3rem;
+    margin-bottom: 0;
+  }
+
+  .calculator-answer-wrapper {
+    margin-block: 0.25rem;
+  }
+
+  .calculator-answer-box {
+    min-height: 4rem;
+    padding: 0.5rem;
+  }
+
+  .calculator-mobile-hud {
+    margin-bottom: 0.25rem;
+    padding-block: 0.25rem;
+  }
+
+  .virtual-keypad-grid {
+    gap: 0.375rem;
+  }
+
+  .virtual-keypad-button {
+    height: 3.75rem;
+  }
+
+  .virtual-keypad-helper {
+    min-height: 1.25rem;
+    margin-top: 0.25rem;
+  }
+}

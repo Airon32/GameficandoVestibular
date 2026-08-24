@@ -851,7 +851,7 @@ export default function App() {
   );
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-[#f5f5f5] flex flex-col font-sans selection:bg-orange-500 selection:text-white">
+    <div className="min-h-screen min-h-[100dvh] bg-[#0a0a0a] text-[#f5f5f5] flex flex-col font-sans selection:bg-orange-500 selection:text-white">
       {/* Persistent Top Header - Only shown when not in an active exercise/exam/guide session */}
       {!isImmersiveSession && (
         <Header
@@ -884,7 +884,9 @@ export default function App() {
         className={
           isImmersiveSession
             ? 'flex-1 flex flex-col w-full p-0 m-0'
-            : 'flex-1 flex flex-col items-stretch justify-start p-2 sm:p-4 max-w-6xl w-full mx-auto overflow-x-hidden'
+            : activeTab === 'game'
+              ? 'flex-1 flex flex-col items-stretch justify-start px-2 py-0 sm:p-4 max-w-6xl w-full mx-auto overflow-x-hidden'
+              : 'flex-1 flex flex-col items-stretch justify-start p-2 sm:p-4 max-w-6xl w-full mx-auto overflow-x-hidden'
         }
       >
         {/* Active Sub-screens */}
