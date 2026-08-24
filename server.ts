@@ -3,7 +3,7 @@ import { createHash } from 'crypto';
 import { App, applicationDefault, cert, getApp, getApps, initializeApp as initializeAdminApp } from 'firebase-admin/app';
 import { DecodedIdToken, getAuth as getAdminAuth } from 'firebase-admin/auth';
 import { Firestore, getFirestore as getAdminFirestore } from 'firebase-admin/firestore';
-import { QuestionGenerator } from './src/engines/QuestionGenerator';
+import { QuestionGenerator } from './src/engines/QuestionGenerator.js';
 
 const app = express();
 const firebaseProjectId = process.env.FIREBASE_PROJECT_ID || 'uplifted-outcome-6w532';

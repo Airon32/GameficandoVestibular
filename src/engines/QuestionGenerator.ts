@@ -1,7 +1,8 @@
-import { DIFFICULTY_CONFIG } from '../config/difficultyConfig';
-import { OperationType, Question } from '../types';
-import { DifficultyEngine, DifficultyProfile } from './DifficultyEngine';
-import { ExpressionEvaluator } from './ExpressionEvaluator';
+import { DIFFICULTY_CONFIG } from '../config/difficultyConfig.js';
+import type { OperationType, Question } from '../types.js';
+import { DifficultyEngine } from './DifficultyEngine.js';
+import type { DifficultyProfile } from './DifficultyEngine.js';
+import { ExpressionEvaluator } from './ExpressionEvaluator.js';
 
 export class QuestionGenerator {
   private static recentExpressions: string[] = [];

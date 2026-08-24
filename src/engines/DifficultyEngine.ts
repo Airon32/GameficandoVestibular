@@ -1,5 +1,6 @@
-import { DIFFICULTY_CONFIG, getStreakBonusPercent, checkStreakMilestone, StreakDifficultyThreshold } from '../config/difficultyConfig';
-import { OperationType, UserState, RecentAnswerRecord } from '../types';
+import { DIFFICULTY_CONFIG, getStreakBonusPercent, checkStreakMilestone } from '../config/difficultyConfig.js';
+import type { StreakDifficultyThreshold } from '../config/difficultyConfig.js';
+import type { OperationType, UserState, RecentAnswerRecord } from '../types.js';
 
 export interface DifficultyProfile {
   targetDifficultyScore: number;

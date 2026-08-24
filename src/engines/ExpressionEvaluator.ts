@@ -1,4 +1,4 @@
-import { ASTNode } from '../types';
+import type { ASTNode } from '../types.js';
 
 /**
  * Safe Mathematical Expression Evaluator and AST processor.
