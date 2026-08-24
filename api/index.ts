@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 
 export default async function handler(request: Request, response: Response) {
   try {
-    const { default: app } = await import('../server');
+    const { default: app } = await import('../server.js');
     return app(request, response);
   } catch (error) {
     console.error('API module initialization failed:', error);
