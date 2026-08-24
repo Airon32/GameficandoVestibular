@@ -368,7 +368,7 @@ export const QUESTION_BANK: EducationalQuestion[] = [
     topicId: 'coesao_coerencia',
     difficulty: 35,
     questionType: 'multiple_choice',
-    prompt: 'Considere o trecho: "O projeto de lei foi aprovado pela câmara; CONUDO, enfrentou forte resistência da sociedade civil." A conjunção em destaque estabelece entre as orações uma relação de:',
+    prompt: 'Considere o trecho: "O projeto de lei foi aprovado pela câmara; CONTUDO, enfrentou forte resistência da sociedade civil." A conjunção em destaque estabelece entre as orações uma relação de:',
     options: [
       { id: 'A', text: 'Causa' },
       { id: 'B', text: 'Adição' },

@@ -11,11 +11,14 @@ import { QUESTION_BANK } from '../data/questionBank';
 import { QuestionGenerator } from './QuestionGenerator';
 import { QuestionValidator } from './QuestionValidator';
 import { ALL_SUBJECT_IDS } from '../config/subjectsConfig';
+import { ProceduralQuestionEngine } from './ProceduralQuestionEngine';
+import { AcademicProgressionEngine } from './AcademicProgressionEngine';
 
 export interface NextQuestionOptions {
   subjectId?: SubjectId | 'mixed';
   topicId?: string;
   targetDifficulty?: number; // 1 to 100
+  difficultyMode?: 'adaptive' | 'easy' | 'medium' | 'hard' | 'extreme';
   userState?: UserState;
   excludeIds?: string[];
   allowSpacedRepetition?: boolean;
@@ -181,7 +184,8 @@ export class HybridQuestionEngine {
     const {
       subjectId = 'mixed',
       topicId,
-      targetDifficulty = 30,
+      targetDifficulty,
+      difficultyMode = 'adaptive',
       userState,
       excludeIds = [],
       allowSpacedRepetition = true,
@@ -226,14 +230,26 @@ export class HybridQuestionEngine {
       activeSubjectId = subjectId;
     }
 
+    const resolvedDifficulty = targetDifficulty
+      ?? AcademicProgressionEngine.getTargetDifficulty(userState, activeSubjectId, difficultyMode);
+
     // 3. If Math, occasionally produce algorithmic procedural questions
     if (activeSubjectId === 'matematica' && Math.random() < 0.5 && !topicId) {
-      const mathQ = this.generateAlgorithmicMathQuestion(targetDifficulty);
+      const mathQ = this.generateAlgorithmicMathQuestion(resolvedDifficulty);
       this.recordSelected(mathQ);
       return mathQ;
     }
 
-    // 4. Candidate Pool: Curated Questions + Template Concepts
+    // 4. Every non-math discipline has a procedural generator. It always
+    // respects the selected subject/topic and prevents exhausted pools from
+    // leaking questions from another discipline.
+    if (activeSubjectId !== 'matematica' && Math.random() < 0.68) {
+      const procedural = ProceduralQuestionEngine.generate(activeSubjectId, resolvedDifficulty, topicId);
+      this.recordSelected(procedural);
+      return procedural;
+    }
+
+    // 5. Candidate Pool: Curated Questions + Template Concepts
     let candidateQuestions: EducationalQuestion[] = [];
 
     if (topicId) {
@@ -276,23 +292,16 @@ export class HybridQuestionEngine {
       }
     }
 
-    // Fallback: If exhausted, generate algorithmic math or pick any valid question bank item
+    // Fallback: never cross subject boundaries.
     if (activeSubjectId === 'matematica') {
-      const fallbackMath = this.generateAlgorithmicMathQuestion(targetDifficulty);
+      const fallbackMath = this.generateAlgorithmicMathQuestion(resolvedDifficulty);
       this.recordSelected(fallbackMath);
       return fallbackMath;
     }
 
-    // Generic fallback from QUESTION_BANK
-    const emergencyQuestions = QUESTION_BANK.filter(
-      (q) => !this.flaggedOrReportedIds.has(q.id)
-    );
-    const fallbackQ =
-      emergencyQuestions[Math.floor(Math.random() * emergencyQuestions.length)] ||
-      this.generateAlgorithmicMathQuestion(20);
-
-    this.recordSelected(fallbackQ);
-    return fallbackQ;
+    const fallback = ProceduralQuestionEngine.generate(activeSubjectId, resolvedDifficulty, topicId);
+    this.recordSelected(fallback);
+    return fallback;
   }
 
   /**

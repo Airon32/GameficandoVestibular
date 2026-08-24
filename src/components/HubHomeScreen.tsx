@@ -20,6 +20,7 @@ import { StudyRecommendationEngine } from '../engines/StudyRecommendationEngine'
 import { ErrorNotebookEngine } from '../engines/ErrorNotebookEngine';
 import { SpacedRepetitionEngine } from '../engines/SpacedRepetitionEngine';
 import { STUDY_GUIDES } from '../data/studyGuidesData';
+import { AcademicProgressionEngine, ACADEMIC_PHASES } from '../engines/AcademicProgressionEngine';
 import {
   Flame,
   Zap,
@@ -40,6 +41,9 @@ import {
   FileCheck2,
   Infinity,
   BookmarkCheck,
+  Gauge,
+  Route,
+  Trophy,
 } from 'lucide-react';
 
 interface HubHomeScreenProps {
@@ -101,6 +105,10 @@ export const HubHomeScreen: React.FC<HubHomeScreenProps> = ({
 
   const currentExamProfile = EXAM_PROFILES[selectedExamId] || EXAM_PROFILES.FATEC;
   const lifetimeQuestions = userState.stats?.lifetimeQuestionsCount || userState.stats?.totalQuestions || 0;
+  const academicProgress = AcademicProgressionEngine.getSnapshot(userState);
+  const questionsToday = userState.stats?.questionsToday || 0;
+  const dailyGoal = 20;
+  const dailyGoalPercent = Math.min(100, Math.round((questionsToday / dailyGoal) * 100));
 
   return (
     <div className="w-full max-w-full p-0 text-neutral-100 space-y-5 sm:space-y-8">
@@ -211,6 +219,87 @@ export const HubHomeScreen: React.FC<HubHomeScreenProps> = ({
         </div>
       </div>
 
+      {/* Academic progression: makes level, challenge growth and the next unlock explicit. */}
+      <section className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-white/10 bg-neutral-900/80 shadow-xl">
+        <div
+          className="absolute inset-x-0 top-0 h-1"
+          style={{ background: `linear-gradient(90deg, ${academicProgress.phase.accent}, #f59e0b)` }}
+        />
+        <div className="grid grid-cols-1 lg:grid-cols-[1.35fr_0.9fr] gap-0">
+          <div className="p-4 sm:p-6 border-b lg:border-b-0 lg:border-r border-neutral-800">
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2 text-xs font-bold">
+                  <span className="inline-flex items-center gap-1.5 text-neutral-300">
+                    <Route size={15} style={{ color: academicProgress.phase.accent }} />
+                    Trilha de Aprovação
+                  </span>
+                  <span className="px-2 py-1 rounded-lg bg-neutral-800 text-neutral-300 border border-neutral-700">
+                    Etapa {ACADEMIC_PHASES.findIndex((phase) => phase.id === academicProgress.phase.id) + 1}/{ACADEMIC_PHASES.length}
+                  </span>
+                </div>
+                <h2 className="mt-2 text-xl sm:text-2xl font-black text-white">
+                  Nível {academicProgress.level} · {academicProgress.phase.name}
+                </h2>
+                <p className="mt-1 text-sm text-neutral-400">{academicProgress.phase.subtitle}</p>
+              </div>
+              <div className="shrink-0 rounded-2xl border border-neutral-700 bg-neutral-950/80 px-4 py-3 text-center">
+                <span className="block text-[10px] uppercase tracking-widest text-neutral-500">Dificuldade ideal</span>
+                <span className="text-2xl font-black" style={{ color: academicProgress.phase.accent }}>
+                  {academicProgress.targetDifficulty}
+                </span>
+                <span className="text-xs text-neutral-500">/100</span>
+              </div>
+            </div>
+
+            <div className="mt-5 space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-semibold text-neutral-300">Progresso do nível</span>
+                <span className="font-mono text-neutral-400">
+                  {academicProgress.currentLevelXP.toLocaleString()} / {academicProgress.xpForNextLevel.toLocaleString()} XP
+                </span>
+              </div>
+              <div className="h-3 rounded-full bg-neutral-800 overflow-hidden border border-neutral-700/60">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${academicProgress.levelProgressPercent}%` }}
+                  transition={{ duration: 0.7, ease: 'easeOut' }}
+                  className="h-full rounded-full"
+                  style={{ background: `linear-gradient(90deg, ${academicProgress.phase.accent}, #f59e0b)` }}
+                />
+              </div>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-neutral-400">
+                <span>{academicProgress.studyMessage}</span>
+                <span className="inline-flex items-center gap-1 text-amber-300 whitespace-nowrap">
+                  <Trophy size={13} /> Próximo marco: nível {academicProgress.nextMilestoneLevel}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 sm:p-6 bg-gradient-to-br from-neutral-900 to-neutral-950">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <span className="text-xs font-bold text-neutral-300 flex items-center gap-1.5">
+                  <Target size={15} className="text-emerald-400" /> Missão de hoje
+                </span>
+                <p className="text-2xl font-black text-white mt-1">{Math.min(questionsToday, dailyGoal)}/{dailyGoal} questões</p>
+              </div>
+              <div className="w-14 h-14 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 flex items-center justify-center">
+                <Gauge size={27} className="text-emerald-400" />
+              </div>
+            </div>
+            <div className="mt-3 h-2 rounded-full bg-neutral-800 overflow-hidden">
+              <div className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-cyan-400" style={{ width: `${dailyGoalPercent}%` }} />
+            </div>
+            <div className="mt-4 rounded-xl border border-amber-500/20 bg-amber-500/5 p-3">
+              <span className="text-[10px] uppercase tracking-widest text-amber-400 font-bold">Próximo desbloqueio</span>
+              <p className="text-sm font-bold text-neutral-100 mt-1">{academicProgress.nextUnlock}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ========================================================
           2. QUICK LAUNCH ACTIONS (MODOS DE TREINAMENTO)
          ======================================================== */}
@@ -313,7 +402,7 @@ export const HubHomeScreen: React.FC<HubHomeScreenProps> = ({
                 Simulado {currentExamProfile.shortName}
               </h3>
               <p className="text-xs text-neutral-400 mt-1 leading-relaxed">
-                {currentExamProfile.totalQuestions} questões cronometradas com diagnóstico oficial de notas e pesos.
+                {currentExamProfile.totalQuestions} questões cronometradas com diagnóstico por matéria, tempo e acertos.
               </p>
             </div>
 
@@ -323,6 +412,82 @@ export const HubHomeScreen: React.FC<HubHomeScreenProps> = ({
             </div>
           </div>
         </div>
+
+        <section className="relative overflow-hidden rounded-3xl border border-blue-500/20 bg-gradient-to-br from-blue-950/35 via-neutral-900 to-neutral-950 p-5 sm:p-6">
+          <div className={`pointer-events-none absolute inset-0 bg-gradient-to-r ${currentExamProfile.accentGradient} opacity-40`} />
+          <div className="relative space-y-5">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-[0.22em] text-blue-400">
+                  Central de Provas
+                </span>
+                <h2 className="mt-1 text-xl font-black text-white sm:text-2xl">
+                  Escolha o seu vestibular
+                </h2>
+                <p className="mt-1 max-w-2xl text-xs leading-relaxed text-neutral-400 sm:text-sm">
+                  Simulados adaptados, cronometrados e preenchidos proceduralmente para manter cada nova tentativa diferente.
+                </p>
+              </div>
+              <span className="w-fit rounded-full border border-neutral-700 bg-neutral-950/70 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-neutral-300">
+                4 modelos de prova
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+              {Object.values(EXAM_PROFILES).map((profile) => {
+                const isSelected = profile.id === currentExamProfile.id;
+                return (
+                  <button
+                    key={profile.id}
+                    type="button"
+                    aria-pressed={isSelected}
+                    onClick={() => setSelectedExamId(profile.id)}
+                    className={`rounded-2xl border p-3 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 ${
+                      isSelected
+                        ? `${profile.badgeColor} shadow-lg shadow-blue-950/30`
+                        : 'border-neutral-800 bg-neutral-950/55 text-neutral-400 hover:border-neutral-600 hover:text-white'
+                    }`}
+                  >
+                    <span className="block text-sm font-black">{profile.shortName}</span>
+                    <span className="mt-1 block text-[10px] font-medium opacity-80">
+                      {profile.totalQuestions} questões · {profile.durationMinutes} min
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="grid gap-4 rounded-2xl border border-neutral-800 bg-neutral-950/70 p-4 md:grid-cols-[1fr_auto] md:items-center">
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className={`rounded-full border px-2.5 py-1 text-[10px] font-black uppercase ${currentExamProfile.badgeColor}`}>
+                    {currentExamProfile.shortName}
+                  </span>
+                  <span className="flex items-center gap-1 text-[11px] font-bold text-neutral-300">
+                    <FileCheck2 size={13} /> {currentExamProfile.totalQuestions} questões
+                  </span>
+                  <span className="flex items-center gap-1 text-[11px] font-bold text-neutral-300">
+                    <Clock size={13} /> {currentExamProfile.durationMinutes} min
+                  </span>
+                  <span className="flex items-center gap-1 text-[11px] font-bold text-neutral-300">
+                    <Layers size={13} /> {currentExamProfile.subjects.length} matérias
+                  </span>
+                </div>
+                <h3 className="mt-3 text-base font-black text-white">{currentExamProfile.name}</h3>
+                <p className="mt-1 max-w-3xl text-xs leading-relaxed text-neutral-400">
+                  {currentExamProfile.description}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => onStartSimulado(currentExamProfile)}
+                className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-blue-900/30 transition-colors hover:bg-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
+              >
+                <Play size={17} fill="currentColor" /> Iniciar {currentExamProfile.shortName}
+              </button>
+            </div>
+          </div>
+        </section>
       </div>
 
       {/* ========================================================

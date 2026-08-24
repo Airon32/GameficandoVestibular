@@ -8,6 +8,7 @@ import {
 } from '../types';
 import { QuestionBankService } from '../data/questionBank';
 import { SUBJECTS_CONFIG } from '../config/subjectsConfig';
+import { HybridQuestionEngine } from './HybridQuestionEngine';
 
 export class SimuladoEngine {
   public static generateExamSession(profile: ExamProfile): {
@@ -18,23 +19,44 @@ export class SimuladoEngine {
     const sessionId = `sim_${profileId}_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
     const questions: EducationalQuestion[] = [];
 
+    const excludeIds: string[] = [];
     for (const spec of (profile?.subjects || [])) {
-      const subjectQuestions = QuestionBankService.getRandomQuestions({
+      const curated = QuestionBankService.getRandomQuestions({
         subjectId: spec.subjectId,
-        count: spec.questionCount,
+        count: Math.min(spec.questionCount, 2),
         examProfileId: profile?.id,
+        excludeIds,
       });
-      questions.push(...subjectQuestions);
+      questions.push(...curated);
+      excludeIds.push(...curated.map((question) => question.id));
+
+      while (questions.filter((question) => question.subjectId === spec.subjectId).length < spec.questionCount) {
+        const position = questions.filter((question) => question.subjectId === spec.subjectId).length;
+        const generated = HybridQuestionEngine.getNextQuestion({
+          subjectId: spec.subjectId,
+          targetDifficulty: Math.min(92, 38 + spec.weight * 6 + position * 2),
+          excludeIds,
+          allowSpacedRepetition: false,
+        });
+        questions.push(generated);
+        excludeIds.push(generated.id);
+      }
     }
 
     // Fallback if needed to reach total count
     if (profile && questions.length < profile.totalQuestions) {
       const remainingNeeded = profile.totalQuestions - questions.length;
-      const extraQuestions = QuestionBankService.getRandomQuestions({
-        count: remainingNeeded,
-        excludeIds: questions.filter((q) => q && q.id).map((q) => q.id),
-      });
-      questions.push(...extraQuestions);
+      for (let index = 0; index < remainingNeeded; index++) {
+        const subject = profile.subjects[index % profile.subjects.length]?.subjectId || 'matematica';
+        const generated = HybridQuestionEngine.getNextQuestion({
+          subjectId: subject,
+          targetDifficulty: 55 + (index % 4) * 7,
+          excludeIds,
+          allowSpacedRepetition: false,
+        });
+        questions.push(generated);
+        excludeIds.push(generated.id);
+      }
     }
 
     return {

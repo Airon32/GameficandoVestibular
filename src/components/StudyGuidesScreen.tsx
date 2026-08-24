@@ -228,8 +228,8 @@ export const StudyGuidesScreen: React.FC<StudyGuidesScreenProps> = ({
                 <span
                   className="text-xs px-2 py-0.5 rounded-full font-bold uppercase"
                   style={{
-                    backgroundColor: `${subjectConfig?.color || '#3b82f6'}20`,
-                    color: subjectConfig?.color || '#60a5fa',
+                    backgroundColor: `${subjectConfig?.accentColorHex || '#3b82f6'}20`,
+                    color: subjectConfig?.accentColorHex || '#60a5fa',
                   }}
                 >
                   {subjectConfig?.name || activeGuide.subjectId}
@@ -668,8 +668,8 @@ export const StudyGuidesScreen: React.FC<StudyGuidesScreenProps> = ({
                     <span
                       className="text-xs px-2.5 py-0.5 rounded-md font-bold uppercase"
                       style={{
-                        backgroundColor: `${subjectCfg?.color || '#3b82f6'}20`,
-                        color: subjectCfg?.color || '#60a5fa',
+                        backgroundColor: `${subjectCfg?.accentColorHex || '#3b82f6'}20`,
+                        color: subjectCfg?.accentColorHex || '#60a5fa',
                       }}
                     >
                       {subjectCfg?.name || guide.subjectId}

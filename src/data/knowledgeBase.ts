@@ -14,7 +14,7 @@ export const KNOWLEDGE_BASE_CONCEPTS: KnowledgeConcept[] = [
   {
     id: 'bio_mitocondria',
     subjectId: 'biologia',
-    topicId: 'bio_citologia',
+    topicId: 'metabolismo_energetico',
     name: 'Mitocôndria e Respiração Celular',
     fact: 'A mitocôndria é a organela celular responsável pela produção da maior parte do ATP (energia) via respiração aeróbia.',
     definition: 'Organela celular delimitada por dupla membrana (cristas internas) que realiza o ciclo de Krebs e a fosforilação oxidativa.',
@@ -69,7 +69,7 @@ export const KNOWLEDGE_BASE_CONCEPTS: KnowledgeConcept[] = [
   {
     id: 'bio_genetica_mendel',
     subjectId: 'biologia',
-    topicId: 'bio_genetica',
+    topicId: 'genetica_mendeliana',
     name: 'Genética Mendeliana (Primeira Lei)',
     fact: 'A Primeira Lei de Mendel (Lei da Segregação dos Fatores) estabelece que cada caráter é determinado por um par de alelos que se separam na formação dos gametas.',
     definition: 'Princípio genético fundamental em que indivíduos diploides heterozigotos (Aa) produzem 50% de gametas com alelo A e 50% com alelo a.',
@@ -108,7 +108,7 @@ export const KNOWLEDGE_BASE_CONCEPTS: KnowledgeConcept[] = [
   {
     id: 'bio_fotossintese',
     subjectId: 'biologia',
-    topicId: 'bio_botanica',
+    topicId: 'metabolismo_energetico',
     name: 'Fotossíntese e Cloroplastos',
     fact: 'A fotossíntese converte energia luminosa, água e gás carbônico (CO2) em glicose e oxigênio (O2) nos cloroplastos.',
     definition: 'Processo anabólico autotrófico dividido em fase clara (fotoquímica nos tilacoides) e fase escura (enzimática/Ciclo de Calvin no estroma).',
@@ -146,7 +146,7 @@ export const KNOWLEDGE_BASE_CONCEPTS: KnowledgeConcept[] = [
   {
     id: 'fis_mruv_cinematica',
     subjectId: 'fisica',
-    topicId: 'fis_cinematica',
+    topicId: 'cinematica',
     name: 'Movimento Retilíneo Uniformemente Variado (MRUV)',
     fact: 'No MRUV, a aceleração escalar é constante e não nula, fazendo a velocidade variar linearmente com o tempo.',
     definition: 'Equações fundamentais: v = v₀ + a·t, s = s₀ + v₀·t + (a·t²)/2 e Equação de Torricelli: v² = v₀² + 2·a·Δs.',
@@ -185,7 +185,7 @@ export const KNOWLEDGE_BASE_CONCEPTS: KnowledgeConcept[] = [
   {
     id: 'fis_leis_newton',
     subjectId: 'fisica',
-    topicId: 'fis_dinamica',
+    topicId: 'dinamica_newton',
     name: 'Leis de Newton e Força Resultante',
     fact: 'A Segunda Lei de Newton (Princípio Fundamental da Dinâmica) estabelece que a força resultante é o produto da massa pela aceleração (F_res = m · a).',
     definition: '1ª Lei: Inércia; 2ª Lei: F = m·a; 3ª Lei: Ação e Reação (forças iguais em módulo, mesma direção, sentidos opostos e aplicadas em corpos diferentes).',
@@ -223,7 +223,7 @@ export const KNOWLEDGE_BASE_CONCEPTS: KnowledgeConcept[] = [
   {
     id: 'qui_estequiometria',
     subjectId: 'quimica',
-    topicId: 'qui_estequiometria',
+    topicId: 'estequiometria',
     name: 'Cálculo Estequiométrico e Leis Ponderais',
     fact: 'As reações químicas obedecem à Lei de Lavoisier (conservação das massas) e à Lei de Proust (proporções constantes).',
     definition: 'Relação quantitativa em mols, massa, volume molar (22,4 L nas CNTP) e moléculas (6,02 × 10²³) entre reagentes e produtos.',
@@ -261,7 +261,7 @@ export const KNOWLEDGE_BASE_CONCEPTS: KnowledgeConcept[] = [
   {
     id: 'his_revolucao_francesa',
     subjectId: 'historia',
-    topicId: 'his_geral',
+    topicId: 'revolucoes_burguesas',
     name: 'Revolução Francesa (1789–1799)',
     fact: 'A Revolução Francesa derrubou o Antigo Regime absolutista e os privilégios estamentais do clero e da nobreza.',
     definition: 'Processo revolucionário burguês marcado pela Queda da Bastilha (1789), Declaração dos Direitos do Homem e do Cidadão, Fase Jacobina (Terror) e Diretório.',
@@ -295,7 +295,7 @@ export const KNOWLEDGE_BASE_CONCEPTS: KnowledgeConcept[] = [
   {
     id: 'his_era_vargas',
     subjectId: 'historia',
-    topicId: 'his_brasil',
+    topicId: 'brasil_republica_velha',
     name: 'Era Vargas (1930–1945)',
     fact: 'Getúlio Vargas assumiu o poder na Revolução de 1930, encerrando a República Velha e promovendo a industrialização e as leis trabalhistas (CLT).',
     definition: 'Período dividido em três fases: Governo Provisório (1930-1934), Governo Constitucional (1934-1937) e Estado Novo (ditadura centralizadora de 1937 a 1945).',
@@ -333,7 +333,7 @@ export const KNOWLEDGE_BASE_CONCEPTS: KnowledgeConcept[] = [
   {
     id: 'por_crase',
     subjectId: 'portugues',
-    topicId: 'por_gramatica',
+    topicId: 'regencia_crase',
     name: 'Emprego do Acento Indicativo de Crase',
     fact: 'A crase é a fusão da preposição "a" com o artigo definido feminino "a/as" ou pronomes demonstrativos iniciados por "a" (àquele, àquela, àquilo).',
     definition: 'Regra geral de teste: troca-se o termo feminino por um masculino correspondente. Se resultar em "ao", há crase.',
@@ -386,7 +386,7 @@ export const KNOWLEDGE_BASE_CONCEPTS: KnowledgeConcept[] = [
   {
     id: 'mat_porcentagem_juros',
     subjectId: 'matematica',
-    topicId: 'mat_porcentagem',
+    topicId: 'porcentagem',
     name: 'Porcentagem e Aumentos Sucessivos',
     fact: 'Aumentar um valor em i% equivale a multiplicá-lo pelo fator (1 + i/100). Aumentos percentuais sucessivos multiplicam seus respectivos fatores.',
     definition: 'Fator multiplicativo: Aumento de 20% = × 1,20; Desconto de 15% = × 0,85. Dois aumentos sucessivos de 20% resultam em 1,20 × 1,20 = 1,44 (aumento real de 44%, não 40%).',
@@ -430,7 +430,7 @@ export const KNOWLEDGE_BASE_CONCEPTS: KnowledgeConcept[] = [
   {
     id: 'mat_trigonometria',
     subjectId: 'matematica',
-    topicId: 'mat_trigonometria',
+    topicId: 'trigonometria',
     name: 'Razões Trigonométricas no Triângulo Retângulo',
     fact: 'No triângulo retângulo, seno = cateto oposto / hipotenusa, cosseno = cateto adjacente / hipotenusa e tangente = cateto oposto / cateto adjacente.',
     definition: 'Relação fundamental da trigonometria: sen²(θ) + cos²(θ) = 1. Ângulos notáveis: 30°, 45° e 60°.',

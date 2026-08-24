@@ -1,4 +1,5 @@
 import { StudyGuide, SubjectId } from '../types';
+import { EXPANDED_STUDY_GUIDES } from './expandedStudyGuides';
 
 /**
  * Structured Mini Apostilas (Study Guides)
@@ -11,14 +12,14 @@ import { StudyGuide, SubjectId } from '../types';
  * 6. RESUMO (3 a 5 pontos)
  * 7. TESTAR CONHECIMENTO & TREINAR AGORA
  */
-export const STUDY_GUIDES: StudyGuide[] = [
+const CORE_STUDY_GUIDES: StudyGuide[] = [
   // =========================================================================
   // MATEMÁTICA: PORCENTAGEM & AUMENTOS SUCESSIVOS
   // =========================================================================
   {
     id: 'guide_mat_porcentagem',
     subjectId: 'matematica',
-    topicId: 'mat_porcentagem',
+    topicId: 'porcentagem',
     title: 'Mini Apostila: Porcentagem e Aumentos Sucessivos',
     subtitle: 'Domine fatores multiplicativos, variações e pegadinhas de vestibulares em 4 minutos.',
     estimatedReadMinutes: 4,
@@ -103,7 +104,7 @@ export const STUDY_GUIDES: StudyGuide[] = [
   {
     id: 'guide_bio_mitocondria',
     subjectId: 'biologia',
-    topicId: 'bio_citologia',
+    topicId: 'metabolismo_energetico',
     title: 'Mini Apostila: Mitocôndria e Respiração Celular',
     subtitle: 'Entenda bioenergética celular, ATP e teoria endossimbiótica em 3 minutos.',
     estimatedReadMinutes: 3,
@@ -174,7 +175,7 @@ export const STUDY_GUIDES: StudyGuide[] = [
   {
     id: 'guide_fis_mruv',
     subjectId: 'fisica',
-    topicId: 'fis_cinematica',
+    topicId: 'cinematica',
     title: 'Mini Apostila: MRUV e Torricelli',
     subtitle: 'Fórmulas essenciais, gráficos e quando usar cada equação sem perder tempo.',
     estimatedReadMinutes: 4,
@@ -245,7 +246,7 @@ export const STUDY_GUIDES: StudyGuide[] = [
   {
     id: 'guide_por_crase',
     subjectId: 'portugues',
-    topicId: 'por_gramatica',
+    topicId: 'regencia_crase',
     title: 'Mini Apostila: A Regra Definitiva da Crase',
     subtitle: 'Casos proibidos, obrigatórios e facultativos com macetes práticos de prova.',
     estimatedReadMinutes: 4,
@@ -325,7 +326,7 @@ export const STUDY_GUIDES: StudyGuide[] = [
   {
     id: 'guide_his_revolucao_francesa',
     subjectId: 'historia',
-    topicId: 'his_geral',
+    topicId: 'revolucoes_burguesas',
     title: 'Mini Apostila: Revolução Francesa (1789–1799)',
     subtitle: 'Causas, fases, personagens e o fim do Antigo Regime resumidos para gabaritar.',
     estimatedReadMinutes: 5,
@@ -391,7 +392,7 @@ export const STUDY_GUIDES: StudyGuide[] = [
   {
     id: 'guide_qui_estequiometria',
     subjectId: 'quimica',
-    topicId: 'qui_estequiometria',
+    topicId: 'estequiometria',
     title: 'Mini Apostila: Cálculo Estequiométrico',
     subtitle: 'Relações molares, volume molar e reagente limitante em 4 passos infalíveis.',
     estimatedReadMinutes: 4,
@@ -456,6 +457,8 @@ export const STUDY_GUIDES: StudyGuide[] = [
     quizQuestionIds: ['qui_esteq_tpl_1', 'qui_geral_1', 'qui_geral_2', 'qui_geral_3', 'qui_geral_4'],
   },
 ];
+
+export const STUDY_GUIDES: StudyGuide[] = [...CORE_STUDY_GUIDES, ...EXPANDED_STUDY_GUIDES];
 
 /**
  * Get Study Guide by ID or topicId

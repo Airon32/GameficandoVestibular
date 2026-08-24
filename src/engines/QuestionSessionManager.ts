@@ -60,6 +60,7 @@ export class QuestionSessionManager {
         subjectId: config.subjectId,
         topicId: config.topicId,
         userState,
+        difficultyMode: config.difficultyMode,
       },
       8
     );
@@ -70,6 +71,7 @@ export class QuestionSessionManager {
         subjectId: config.subjectId,
         topicId: config.topicId,
         userState,
+        difficultyMode: config.difficultyMode,
       });
 
     return { session: this.activeSession, firstQuestion };
@@ -270,6 +272,7 @@ export class QuestionSessionManager {
             subjectId: this.sessionConfig.subjectId,
             topicId: this.sessionConfig.topicId,
             userState: updatedUserState,
+            difficultyMode: this.sessionConfig.difficultyMode,
           },
           5
         );
@@ -284,6 +287,7 @@ export class QuestionSessionManager {
         subjectId: this.sessionConfig.subjectId,
         topicId: this.sessionConfig.topicId,
         userState: updatedUserState,
+        difficultyMode: this.sessionConfig.difficultyMode,
       });
 
     return {

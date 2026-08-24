@@ -31,6 +31,7 @@ import {
 import { QuestionSessionManager } from '../engines/QuestionSessionManager';
 import { SUBJECTS_CONFIG } from '../config/subjectsConfig';
 import { getStudyGuideByIdOrTopic } from '../data/studyGuidesData';
+import { AcademicProgressionEngine } from '../engines/AcademicProgressionEngine';
 
 interface InfiniteTrainingScreenProps {
   config: InfiniteSessionConfig;
@@ -89,6 +90,7 @@ export const InfiniteTrainingScreen: React.FC<InfiniteTrainingScreenProps> = ({
   }, [isPaused, showSummaryModal]);
 
   const subjectConfig = currentQuestion ? SUBJECTS_CONFIG[currentQuestion.subjectId] : null;
+  const academicProgress = AcademicProgressionEngine.getSnapshot(userState, currentQuestion?.subjectId);
   const relatedGuide = currentQuestion
     ? getStudyGuideByIdOrTopic(currentQuestion.topicId) ||
       getStudyGuideByIdOrTopic(currentQuestion.subjectId)
@@ -232,14 +234,17 @@ export const InfiniteTrainingScreen: React.FC<InfiniteTrainingScreenProps> = ({
             <span
               className="text-xs px-2.5 py-1 rounded-lg font-bold uppercase tracking-wider"
               style={{
-                backgroundColor: `${subjectConfig?.color || '#3b82f6'}20`,
-                color: subjectConfig?.color || '#60a5fa',
+                backgroundColor: `${subjectConfig?.accentColorHex || '#3b82f6'}20`,
+                color: subjectConfig?.accentColorHex || '#60a5fa',
               }}
             >
               {subjectConfig?.name || currentQuestion.subjectId}
             </span>
             <span className="hidden sm:inline text-xs text-slate-400 font-medium">
               {config.sessionType === 'infinite' ? 'Treino Infinito' : 'Treino Rápido'}
+            </span>
+            <span className="hidden lg:inline text-[10px] uppercase tracking-wider text-slate-500 border-l border-slate-700 pl-3">
+              Nível {academicProgress.level} · {academicProgress.phase.name}
             </span>
           </div>
 
@@ -332,7 +337,7 @@ export const InfiniteTrainingScreen: React.FC<InfiniteTrainingScreenProps> = ({
             <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
               <div className="flex items-center gap-2">
                 <span className="px-2.5 py-0.5 rounded-md bg-slate-800 text-slate-300 font-semibold border border-slate-700">
-                  Questão #{session?.questionsAnswered ? session.questionsAnswered + 1 : 1}
+                  Questão #{Math.max(1, (session?.questionsAnswered || 0) + (isSubmitted ? 0 : 1))}
                 </span>
 
                 <span className="px-2.5 py-0.5 rounded-md bg-indigo-950 text-indigo-300 font-medium border border-indigo-800/40">
