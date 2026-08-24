@@ -1,0 +1,6 @@
+{
+  "name": "Matemática Gamificada",
+  "description": "Hub completo de treinamento gamificado para vestibulares (FATEC, ENEM, FUVEST, UNICAMP) com 15 disciplinas, simulados cronometrados, caderno de erros, repetição espaçada, cálculo rápido, ranks e progressão contínua.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["AUTHENTICATED_API", "FIREBASE_SYNC", "PWA_OFFLINE"]
+}

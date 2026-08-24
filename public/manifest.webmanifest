@@ -1,0 +1,20 @@
+{
+  "name": "Matemática Gamificada",
+  "short_name": "Matemática",
+  "description": "Treinamento matemático gamificado com progressão infinita, XP adaptativo, ranks e estatísticas.",
+  "start_url": "/",
+  "id": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "categories": ["education", "games"],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

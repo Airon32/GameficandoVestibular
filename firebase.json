@@ -1,0 +1,6 @@
+{
+  "firestore": {
+    "database": "ai-studio-matemticagamific-a7afc0e7-171e-42f5-9f59-50bb45439408",
+    "rules": "firestore.rules"
+  }
+}

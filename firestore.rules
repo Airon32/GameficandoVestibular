@@ -1,0 +1,134 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Full learning records and email are private to the account owner.
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create, update: if isOwner(userId)
+        && request.resource.data.id == userId;
+      allow delete: if isOwner(userId);
+    }
+
+    // Sanitized directory used for discovery. Non-public profiles have no document.
+    match /public_profiles/{userId} {
+      allow read: if resource.data.privacy == 'public' || isOwner(userId);
+      allow create, update: if isOwner(userId)
+        && request.resource.data.id == userId
+        && request.resource.data.privacy == 'public'
+        && request.resource.data.keys().hasOnly([
+          'id', 'username', 'displayName', 'name', 'avatar', 'bio',
+          'selectedTitle', 'privacy', 'level', 'totalXP', 'weeklyXP',
+          'currentWeekId', 'leagueTier', 'rank', 'streak', 'maxCombo',
+          'stats', 'achievementsCount', 'updatedAt'
+        ]);
+      allow delete: if isOwner(userId);
+    }
+
+    // A reservation can only be created once and remains owned by its creator.
+    match /usernames/{username} {
+      allow read: if true;
+      allow create: if isSignedIn()
+        && !exists(/databases/$(database)/documents/usernames/$(username))
+        && request.resource.data.userId == request.auth.uid;
+      allow update: if isSignedIn()
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.userId == request.auth.uid;
+      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    match /friend_requests/{requestId} {
+      allow read: if isSignedIn() && (
+        resource.data.fromUserId == request.auth.uid ||
+        resource.data.toUserId == request.auth.uid
+      );
+      allow create: if isSignedIn()
+        && request.resource.data.id == requestId
+        && request.resource.data.fromUserId == request.auth.uid
+        && request.resource.data.toUserId != request.auth.uid
+        && request.resource.data.status == 'pending';
+      allow update: if isSignedIn()
+        && resource.data.toUserId == request.auth.uid
+        && resource.data.status == 'pending'
+        && request.resource.data.status in ['accepted', 'declined']
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt']);
+      allow delete: if isSignedIn() && (
+        resource.data.fromUserId == request.auth.uid ||
+        resource.data.toUserId == request.auth.uid
+      );
+    }
+
+    match /friendships/{friendshipId} {
+      allow read: if isSignedIn() && (
+        resource.data.userAId == request.auth.uid ||
+        resource.data.userBId == request.auth.uid
+      );
+      allow create: if isSignedIn()
+        && request.resource.data.id == friendshipId
+        && request.resource.data.userBId == request.auth.uid
+        && request.resource.data.acceptedBy == request.auth.uid
+        && getAfter(/databases/$(database)/documents/friend_requests/$(request.resource.data.requestId)).data.status == 'accepted'
+        && getAfter(/databases/$(database)/documents/friend_requests/$(request.resource.data.requestId)).data.fromUserId == request.resource.data.userAId
+        && getAfter(/databases/$(database)/documents/friend_requests/$(request.resource.data.requestId)).data.toUserId == request.resource.data.userBId;
+      allow update: if false;
+      allow delete: if isSignedIn() && (
+        resource.data.userAId == request.auth.uid ||
+        resource.data.userBId == request.auth.uid
+      );
+    }
+
+    match /blocked_users/{blockId} {
+      allow read: if isSignedIn() && resource.data.blockerId == request.auth.uid;
+      allow create: if isSignedIn()
+        && request.resource.data.blockerId == request.auth.uid
+        && request.resource.data.blockedId != request.auth.uid;
+      allow update: if false;
+      allow delete: if isSignedIn() && resource.data.blockerId == request.auth.uid;
+    }
+
+    // Challenge creation and scoring are performed by the authenticated server.
+    match /challenges/{challengeId} {
+      allow read: if isSignedIn() && (
+        resource.data.challengerId == request.auth.uid ||
+        resource.data.opponentId == request.auth.uid
+      );
+      allow create, update, delete: if false;
+    }
+
+    // The answer key is exclusively available to the authenticated server.
+    match /challenge_keys/{challengeId} {
+      allow read, write: if false;
+    }
+
+    // Competitive ledgers, issued questions and idempotency records are server-only.
+    match /competitive_users/{userId} {
+      allow read, write: if false;
+    }
+
+    match /competitive_questions/{questionId} {
+      allow read, write: if false;
+    }
+
+    match /processed_events/{eventId} {
+      allow read, write: if false;
+    }
+
+    // Creation is server-only; a recipient may only change the read flag.
+    match /notifications/{notificationId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if false;
+      allow update: if isSignedIn()
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isRead']);
+      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+  }
+}
