@@ -1,12 +1,14 @@
 import express, { NextFunction, Request, Response } from 'express';
 import { createHash } from 'crypto';
-import { applicationDefault, cert, getApp, getApps, initializeApp as initializeAdminApp } from 'firebase-admin/app';
+import { App, applicationDefault, cert, getApp, getApps, initializeApp as initializeAdminApp } from 'firebase-admin/app';
 import { DecodedIdToken, getAuth as getAdminAuth } from 'firebase-admin/auth';
-import { getFirestore as getAdminFirestore } from 'firebase-admin/firestore';
+import { Firestore, getFirestore as getAdminFirestore } from 'firebase-admin/firestore';
 import { QuestionGenerator } from './src/engines/QuestionGenerator';
-import firebaseConfig from './firebase-applet-config.json';
 
 const app = express();
+const firebaseProjectId = process.env.FIREBASE_PROJECT_ID || 'uplifted-outcome-6w532';
+const firestoreDatabaseId = process.env.FIRESTORE_DATABASE_ID
+  || 'ai-studio-matemticagamific-a7afc0e7-171e-42f5-9f59-50bb45439408';
 const rawServiceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_JSON?.trim();
 let firebaseConfigurationError = '';
 let serviceAccount: Record<string, any> | null = null;
@@ -28,13 +30,26 @@ if (rawServiceAccount) {
   firebaseConfigurationError = 'FIREBASE_SERVICE_ACCOUNT_JSON não foi configurada na Vercel.';
 }
 if (serviceAccount?.private_key) serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
-const adminApp = getApps().length > 0
-  ? getApp()
-  : initializeAdminApp({
-      projectId: firebaseConfig.projectId,
-      credential: serviceAccount ? cert(serviceAccount) : applicationDefault(),
-    });
-const adminDb = getAdminFirestore(adminApp, firebaseConfig.firestoreDatabaseId || '(default)');
+let adminApp: App;
+let adminDb: Firestore;
+
+function initializeFirebaseAdminServices(): void {
+  if (adminApp && adminDb) return;
+  if (firebaseConfigurationError) throw new Error(firebaseConfigurationError);
+  try {
+    adminApp = getApps().length > 0
+      ? getApp()
+      : initializeAdminApp({
+          projectId: firebaseProjectId,
+          credential: serviceAccount ? cert(serviceAccount) : applicationDefault(),
+        });
+    adminDb = getAdminFirestore(adminApp, firestoreDatabaseId);
+  } catch (error) {
+    firebaseConfigurationError = 'Não foi possível inicializar o Firebase Admin. Revise a credencial configurada.';
+    console.error('Firebase Admin initialization error:', error);
+    throw error;
+  }
+}
 
 app.disable('x-powered-by');
 app.use(express.json({ limit: '1mb' }));
@@ -77,6 +92,14 @@ async function requireAuth(req: AuthenticatedRequest, res: Response, next: NextF
   const header = req.header('authorization') || '';
   const token = header.startsWith('Bearer ') ? header.slice(7) : '';
   if (!token) return res.status(401).json({ error: 'Autenticação obrigatória.' });
+  try {
+    initializeFirebaseAdminServices();
+  } catch {
+    return res.status(503).json({
+      error: firebaseConfigurationError,
+      code: 'FIREBASE_ADMIN_NOT_CONFIGURED',
+    });
+  }
   try {
     req.authUser = await getAdminAuth(adminApp).verifyIdToken(token, true);
     return next();
@@ -319,6 +342,7 @@ app.get('/api/leaderboard', rateLimit(60, 60_000), async (_req, res) => {
     });
   }
   try {
+    initializeFirebaseAdminServices();
     const snapshot = await adminDb.collection('competitive_users').orderBy('competitiveXP', 'desc').limit(100).get();
     const users = snapshot.docs.map((document) => {
       const user = document.data() as ServerUser;
