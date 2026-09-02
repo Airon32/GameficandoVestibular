@@ -1,6 +1,6 @@
 # Matemática Gamificada
 
-Plataforma single-player de treino gamificado para vestibulares, com 15 disciplinas, simulados, repetição espaçada, cálculo rápido, progressão contínua, 30 ranks visuais e PWA.
+Plataforma single-player de treino gamificado para vestibulares, com 15 disciplinas (incluindo um English Hub dentro de Língua Inglesa), simulados, repetição espaçada, cálculo rápido, progressão contínua, 30 ranks visuais e PWA.
 
 ## Executar localmente
 
@@ -25,6 +25,8 @@ Para reproduzir localmente o roteamento serverless da hospedagem, instale a Verc
 - Questões opcionais emitidas pelo servidor são de uso único e protegem o backup pessoal contra duplicidade.
 - A sincronização exige token Firebase e sempre força a identidade autenticada.
 - A exclusão de conta remove autenticação, progresso privado, questões temporárias e eventos associados.
+- O módulo de Inglês (`ingles`) reutiliza XP, rank, streak e conquistas globais. CEFR é estimativa linguística, não certificação oficial.
+- Endpoints opcionais `/api/english/teacher`, `/api/english/conversation` e `/api/english/writing-feedback` usam `GEMINI_API_KEY` só no servidor. Sem a chave, o curso segue com conteúdo local.
 
 Antes de publicar, implante as regras do arquivo `firestore.rules` no mesmo projeto Firebase. A configuração web do Firebase identifica o projeto, mas não substitui as regras nem credenciais administrativas do servidor.
 

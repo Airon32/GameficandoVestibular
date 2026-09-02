@@ -614,6 +614,8 @@ export const HubHomeScreen: React.FC<HubHomeScreenProps> = ({
             const masteryData = subjectsMap[sub.id];
             const masteryPercent = masteryData ? masteryData.masteryPercent : 0;
             const skillLevel = masteryData ? masteryData.skillLevel : 1;
+            const english = sub.id === 'ingles' ? userState.englishProgress : undefined;
+            const pointerUnit = english?.course?.currentUnitId;
 
             return (
               <div
@@ -630,11 +632,15 @@ export const HubHomeScreen: React.FC<HubHomeScreenProps> = ({
                     >
                       {sub.name}
                     </span>
-                    <span className="text-xs text-neutral-400 font-medium">Nível {skillLevel}</span>
+                    <span className="text-xs text-neutral-400 font-medium">
+                      {english ? `Est. ${english.estimatedCefr.toUpperCase()}` : `Nível ${skillLevel}`}
+                    </span>
                   </div>
 
                   <p className="text-xs text-neutral-400 line-clamp-2 leading-relaxed">
-                    {sub.description}
+                    {english
+                      ? `Current Course: ${pointerUnit || 'Foundation'} · Daily ${Math.min(100, userState.stats.questionsToday || 0)}q`
+                      : sub.description}
                   </p>
                 </div>
 
@@ -654,12 +660,12 @@ export const HubHomeScreen: React.FC<HubHomeScreenProps> = ({
                   {/* Direct Actions in Card */}
                   <div className="pt-1 flex items-center gap-2">
                     <button
-                      onClick={() => onStartInfiniteTraining({ subjectId: sub.id })}
+                      onClick={() => (sub.id === 'ingles' ? onSelectSubjectDetail(sub.id) : onStartInfiniteTraining({ subjectId: sub.id }))}
                       className="flex-1 py-1.5 rounded-lg bg-indigo-600/80 hover:bg-indigo-600 text-white font-bold text-xs flex items-center justify-center gap-1 transition-colors"
-                      title={`Iniciar Treino Infinito em ${sub.name}`}
+                      title={sub.id === 'ingles' ? 'Abrir English Hub' : `Iniciar Treino Infinito em ${sub.name}`}
                     >
                       <Zap size={13} />
-                      Treinar Agora
+                      {sub.id === 'ingles' ? 'CONTINUE' : 'Treinar Agora'}
                     </button>
                     <button
                       onClick={() => onSelectSubjectDetail(sub.id)}

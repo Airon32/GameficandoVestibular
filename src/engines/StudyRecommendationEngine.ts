@@ -85,7 +85,27 @@ export class StudyRecommendationEngine {
       });
     }
 
-    // 3. Recency Check ("Você está há dias sem praticar X")
+    // 2b. English skill weakness (never inferred from XP)
+    const english = state.englishProgress;
+    if (english?.skills) {
+      const weakest = Object.values(english.skills)
+        .filter((skill) => skill.activities >= 3)
+        .sort((a, b) => a.score - b.score)[0];
+      const average = Object.values(english.skills).reduce((acc, skill) => acc + skill.score, 0) / 6;
+      if (weakest && weakest.score + 12 <= average) {
+        recommendations.unshift({
+          id: `rec_en_skill_${weakest.skill}`,
+          type: 'weakness',
+          title: `${weakest.skill === 'listening' ? 'Listening' : weakest.skill} Practice`,
+          subtitle: `${weakest.skill === 'listening' ? 'Listening' : weakest.skill} está atualmente ${Math.round(average - weakest.score)} pontos abaixo da sua média de inglês.`,
+          subjectId: 'ingles',
+          masteryPercent: Math.round(weakest.score),
+          priority: 'high',
+          actionLabel: 'Praticar habilidade',
+          gameMode: 'quiz_rapido',
+        });
+      }
+    }
     for (const [sId, subject] of Object.entries(subjectsMap)) {
       const subjectId = sId as SubjectId;
       if (!subjectId) continue;

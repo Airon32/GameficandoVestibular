@@ -20,6 +20,7 @@ export const AchievementsView: React.FC<AchievementsViewProps> = ({ userState, o
     { id: 'accuracy', label: 'Combos & Precisão' },
     { id: 'streak', label: 'Sequência' },
     { id: 'operations', label: 'Operações' },
+    { id: 'english', label: 'Inglês' },
   ];
 
   const filteredAchievements = ACHIEVEMENTS_LIST.filter(
@@ -49,6 +50,20 @@ export const AchievementsView: React.FC<AchievementsViewProps> = ({ userState, o
         return stats.byOperation['division']?.correct || 0;
       case 'fastestCorrectTime':
         return 0; // Boolean unlock
+      case 'englishWordsMastered':
+        return userState.englishProgress?.stats.wordsMastered || 0;
+      case 'englishWordsSeen':
+        return (Object.values(userState.englishProgress?.vocabulary || {}) as Array<{ timesSeen: number }>).filter((entry) => entry.timesSeen > 0).length;
+      case 'englishListeningCount':
+        return userState.englishProgress?.stats.listeningCount || 0;
+      case 'englishSpeakingCount':
+        return userState.englishProgress?.stats.speakingCount || 0;
+      case 'englishCefrIndex':
+        return userState.englishProgress
+          ? ['a0', 'a1', 'a2', 'b1', 'b2', 'c1', 'c2'].indexOf(userState.englishProgress.estimatedCefr)
+          : 0;
+      case 'englishQuestions':
+        return userState.englishProgress?.stats.questionsAnswered || 0;
       default:
         return 0;
     }

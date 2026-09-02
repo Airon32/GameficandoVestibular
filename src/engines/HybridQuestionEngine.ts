@@ -13,6 +13,7 @@ import { QuestionValidator } from './QuestionValidator';
 import { ALL_SUBJECT_IDS } from '../config/subjectsConfig';
 import { ProceduralQuestionEngine } from './ProceduralQuestionEngine';
 import { AcademicProgressionEngine } from './AcademicProgressionEngine';
+import { buildCoreEnglishQuestions } from '../data/english/englishQuestions';
 
 export interface NextQuestionOptions {
   subjectId?: SubjectId | 'mixed';
@@ -152,7 +153,7 @@ export class HybridQuestionEngine {
     const question: MultipleChoiceQuestion = {
       id: `math_algo_${mathQ.id}_${Date.now()}`,
       subjectId: 'matematica',
-      topicId: 'mat_aritmetica',
+      topicId: 'aritmetica_basica',
       difficulty: mathQ.difficultyScore,
       calibratedDifficulty: mathQ.difficultyScore,
       questionType: 'multiple_choice',
@@ -260,6 +261,14 @@ export class HybridQuestionEngine {
       candidateQuestions = QUESTION_BANK.filter(
         (q) => q.subjectId === activeSubjectId && !allExcluded.has(q.id)
       );
+    }
+
+    if (activeSubjectId === 'ingles') {
+      const englishPool = Object.values(buildCoreEnglishQuestions()).flat();
+      candidateQuestions = [
+        ...candidateQuestions,
+        ...englishPool.filter((q) => (!topicId || q.topicId === topicId) && !allExcluded.has(q.id)),
+      ];
     }
 
     // Fetch Knowledge Base Concepts for this subject

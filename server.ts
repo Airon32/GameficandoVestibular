@@ -248,6 +248,67 @@ app.delete('/api/account', requireAuth, rateLimit(3, 60 * 60_000), async (req: A
   }
 });
 
+const GEMINI_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '';
+
+async function generateGeminiText(prompt: string): Promise<string | null> {
+  if (!GEMINI_KEY) return null;
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(GEMINI_KEY)}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts: [{ text: prompt.slice(0, 4000) }] }],
+          generationConfig: { maxOutputTokens: 400, temperature: 0.4 },
+        }),
+      }
+    );
+    if (!response.ok) return null;
+    const data = await response.json() as { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> };
+    return data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || null;
+  } catch {
+    return null;
+  }
+}
+
+app.post('/api/english/teacher', rateLimit(20, 60_000), async (req, res) => {
+  const action = safeText(req.body?.action, 40) || 'help';
+  const cefr = safeText(req.body?.cefr, 4) || 'a0';
+  const weakSkill = safeText(req.body?.weakSkill, 20);
+  const lastMistake = safeText(req.body?.lastMistake, 280);
+  const { localTeacherReply } = await import('./src/data/english/englishConversation.js');
+  const fallback = localTeacherReply({ action, cefr, weakSkill: weakSkill || undefined, lastMistake: lastMistake || undefined });
+  const generated = await generateGeminiText(
+    `You are an English teacher inside GameficandoVestibular. Estimated CEFR ${cefr}. Weak skill: ${weakSkill || 'unknown'}. Action: ${action}. Last mistake snippet: ${lastMistake || 'none'}. Explain briefly. A1 may use Portuguese. B2+ prefer English. Never claim official certification. Do not ask for personal data.`
+  );
+  return res.json({ text: generated || fallback, fallback: !generated });
+});
+
+app.post('/api/english/conversation', rateLimit(30, 60_000), async (req, res) => {
+  const scenario = safeText(req.body?.scenario, 40) || 'coffee';
+  const userText = safeText(req.body?.userText, 400);
+  const learningMode = Boolean(req.body?.learningMode);
+  const cefr = safeText(req.body?.cefr, 4) || 'a0';
+  const { localConversationReply } = await import('./src/data/english/englishConversation.js');
+  const fallback = localConversationReply(scenario, userText, learningMode);
+  const generated = await generateGeminiText(
+    `Role-play scenario ${scenario}. Student CEFR ${cefr}. Student said: "${userText}". Stay in character. ${learningMode ? 'Add one short learning note if there is a clear grammar issue.' : 'Prioritize fluent conversation; no mid-sentence interruption.'} Keep under 80 words.`
+  );
+  return res.json({ text: generated || fallback, fallback: !generated });
+});
+
+app.post('/api/english/writing-feedback', rateLimit(20, 60_000), async (req, res) => {
+  const text = safeText(req.body?.text, 800);
+  const cefr = safeText(req.body?.cefr, 4) || 'a0';
+  const { writingHeuristicScore } = await import('./src/utils/englishAnswers.js');
+  const local = writingHeuristicScore(text, 8);
+  const generated = await generateGeminiText(
+    `Give short writing feedback for a ${cefr} English learner. Text: "${text}". Mention 1 strength and 1 correction. Do not grade as official exam.`
+  );
+  return res.json({ text: generated || local.feedback, fallback: !generated, score: local.score });
+});
+
 app.use((error: unknown, _req: Request, res: Response, _next: NextFunction) => {
   console.error('Unhandled API error:', error);
   res.status(500).json({ error: 'Erro interno do servidor.' });

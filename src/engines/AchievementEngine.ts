@@ -32,6 +32,14 @@ export class AchievementEngine {
       multCorrect,
       divCorrect,
       fastestCorrectTime: lastCorrectTimeMs !== undefined ? lastCorrectTimeMs : 999999,
+      englishWordsMastered: userState.englishProgress?.stats.wordsMastered || 0,
+      englishWordsSeen: Object.values(userState.englishProgress?.vocabulary || {}).filter((entry: { timesSeen: number }) => entry.timesSeen > 0).length,
+      englishListeningCount: userState.englishProgress?.stats.listeningCount || 0,
+      englishSpeakingCount: userState.englishProgress?.stats.speakingCount || 0,
+      englishCefrIndex: userState.englishProgress
+        ? ['a0', 'a1', 'a2', 'b1', 'b2', 'c1', 'c2'].indexOf(userState.englishProgress.estimatedCefr)
+        : 0,
+      englishQuestions: userState.englishProgress?.stats.questionsAnswered || 0,
     };
 
     for (const achievement of (ACHIEVEMENTS_LIST || [])) {

@@ -405,6 +405,23 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ userState }) => 
           <span className="font-bold text-orange-400 font-mono">Total no período: {chartData.reduce((acc, c) => acc + c.xp, 0)} XP</span>
         </div>
       </div>
+
+      {userState.englishProgress && (
+        <div className="bg-[#111] rounded-3xl p-5 border border-blue-500/20 space-y-3">
+          <h3 className="text-sm font-black uppercase tracking-wider text-blue-300">Língua Inglesa</h3>
+          <p className="text-xs text-neutral-400">
+            Estimated CEFR {userState.englishProgress.estimatedCefr.toUpperCase()} · {userState.englishProgress.stats.questionsAnswered} questões · {userState.englishProgress.stats.accuracy}% · {userState.englishProgress.stats.wordsMastered} palavras dominadas
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {(Object.values(userState.englishProgress.skills) as Array<{ skill: string; score: number }>).map((skill) => (
+              <div key={skill.skill} className="rounded-2xl border border-[#222] p-3">
+                <p className="text-[10px] uppercase text-[#777]">{skill.skill}</p>
+                <p className="text-xl font-black text-white">{Math.round(skill.score)}%</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

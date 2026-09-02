@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
 import { Header } from './components/Header';
 import { HomeScreen } from './components/HomeScreen';
 import { CalculatorScreen } from './components/CalculatorScreen';
@@ -23,6 +23,11 @@ import { ErrorNotebookScreen } from './components/ErrorNotebookScreen';
 import { SpacedRepetitionScreen } from './components/SpacedRepetitionScreen';
 import { InfiniteTrainingScreen } from './components/InfiniteTrainingScreen';
 import { StudyGuidesScreen } from './components/StudyGuidesScreen';
+import { EnglishLearningEngine } from './engines/EnglishLearningEngine';
+
+const EnglishHubScreen = lazy(() =>
+  import('./components/english/EnglishHubScreen').then((mod) => ({ default: mod.EnglishHubScreen }))
+);
 
 import {
   Achievement,
@@ -115,6 +120,8 @@ export default function App() {
   const [activeInfiniteConfig, setActiveInfiniteConfig] = useState<InfiniteSessionConfig | null>(null);
   const [showStudyGuides, setShowStudyGuides] = useState<boolean>(false);
   const [activeStudyGuideId, setActiveStudyGuideId] = useState<string | null>(null);
+  const [showEnglishHub, setShowEnglishHub] = useState<boolean>(false);
+  const [englishImmersive, setEnglishImmersive] = useState<boolean>(false);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const questionStartTimeRef = useRef<number>(Date.now());
@@ -708,6 +715,8 @@ export default function App() {
       };
     });
 
+    currentState = EnglishLearningEngine.syncPracticeFromSession(currentState, answersList);
+
     // 2. Grant Global XP and advance level/ranks
     const earnedXP = sessionStats.totalXP || sessionStats.xpEarned || (sessionStats.correctCount * 15);
     const now = Date.now();
@@ -847,7 +856,8 @@ export default function App() {
     activeInfiniteConfig ||
     showStudyGuides ||
     activeEducationalSession ||
-    activeSimuladoProfile
+    activeSimuladoProfile ||
+    englishImmersive
   );
 
   return (
@@ -866,6 +876,8 @@ export default function App() {
             setShowSpacedRepetition(false);
             setActiveInfiniteConfig(null);
             setShowStudyGuides(false);
+            setShowEnglishHub(false);
+            setEnglishImmersive(false);
             setActiveTab(tab);
           }}
           onOpenSettings={() => setShowSettings(true)}
@@ -950,6 +962,31 @@ export default function App() {
             onCompleteSimulado={handleCompleteSimulado}
             onExit={() => setActiveSimuladoProfile(null)}
           />
+        ) : showEnglishHub ? (
+          <Suspense fallback={<div className="p-6 text-sm text-neutral-400">Carregando Língua Inglesa…</div>}>
+            <EnglishHubScreen
+              userState={userState}
+              onUpdate={(state) => {
+                setUserState(state);
+                StorageService.saveState(state);
+              }}
+              onBack={() => {
+                setShowEnglishHub(false);
+                setEnglishImmersive(false);
+              }}
+              onOpenVestibular={() => {
+                setShowEnglishHub(false);
+                setEnglishImmersive(false);
+                setSelectedSubjectDetail('ingles');
+              }}
+              onOpenNotebook={() => {
+                setShowEnglishHub(false);
+                setEnglishImmersive(false);
+                setShowErrorNotebook(true);
+              }}
+              onImmersiveChange={setEnglishImmersive}
+            />
+          </Suspense>
         ) : selectedSubjectDetail ? (
           <SubjectDetailScreen
             subjectId={selectedSubjectDetail}
@@ -984,15 +1021,18 @@ export default function App() {
           <ErrorNotebookScreen
             userState={userState}
             onBack={() => setShowErrorNotebook(false)}
-            onStartRecoverySession={(errorQuestions) => {
+            onStartRecoveryMode={(errorQuestions) => {
               setShowErrorNotebook(false);
               handleStartEducationalGame({
                 gameMode: 'quiz_rapido',
                 customQuestions: errorQuestions,
               });
             }}
-            onRemoveError={(qId) => {
-              const updated = ErrorNotebookEngine.removeErrorRecord(userState, qId);
+            onMarkErrorRecovered={(qId) => {
+              const updated = {
+                ...userState,
+                errorNotebook: ErrorNotebookEngine.recordCorrection(userState, qId),
+              };
               setUserState(updated);
               StorageService.saveState(updated);
             }}
@@ -1026,7 +1066,13 @@ export default function App() {
                 onStartSimulado={handleStartSimulado}
                 onOpenErrorNotebook={() => setShowErrorNotebook(true)}
                 onOpenSpacedRepetition={() => setShowSpacedRepetition(true)}
-                onSelectSubjectDetail={(sId) => setSelectedSubjectDetail(sId)}
+                onSelectSubjectDetail={(sId) => {
+                  if (sId === 'ingles') {
+                    setShowEnglishHub(true);
+                    return;
+                  }
+                  setSelectedSubjectDetail(sId);
+                }}
                 onNavigateTab={(tab) => setActiveTab(tab)}
                 onOpenProfile={() => {
                   setShowPlayerProfileModal(true);

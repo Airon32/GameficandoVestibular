@@ -3,6 +3,7 @@ import { RankManager } from '../engines/RankManager';
 import { LevelManager } from '../engines/LevelManager';
 import { PROGRESSION_VERSION } from '../config/progressionConfig';
 import { AchievementEngine } from '../engines/AchievementEngine';
+import { EnglishLearningEngine } from '../engines/EnglishLearningEngine';
 import { SyncEvent, UserState, OperationType } from '../types';
 import { CloudStorageService } from './firebase';
 import { getCurrentWeekId } from '../utils/progressPeriod';
@@ -92,6 +93,7 @@ export function createDefaultUserState(
     progressionVersion: PROGRESSION_VERSION,
     ascensionLevel: 0,
     settings: { ...DEFAULT_USER_SETTINGS },
+    englishProgress: EnglishLearningEngine.createDefaultProgress(),
     createdAt: Date.now(),
     updatedAt: Date.now(),
   };
@@ -265,13 +267,30 @@ export class StorageService {
     mergedState.unlockedTitles = retroactive.updatedUnlockedTitles;
     if (retroactive.bonusXP > 0) {
       mergedState.totalXP += retroactive.bonusXP;
-      const recal = LevelManager.getLevelDataFromTotalXP(mergedState.totalXP);
+      const recal = LevelManager.getLevelDataFromTotalXP(mergedState.totalXP, mergedState.highestUnlockedRank);
       mergedState.level = recal.level;
       mergedState.currentLevelXP = recal.currentLevelXP;
       mergedState.xpForNextLevel = recal.xpForNextLevel;
       mergedState.levelProgressPercent = recal.levelProgressPercent;
-      mergedState.rank = RankManager.getRankForLevel(recal.level);
+      mergedState.rank = RankManager.getRankForLevel(recal.level, mergedState.highestUnlockedRank);
     }
+
+    mergedState.subjectsMastery = local.updatedAt >= remote.updatedAt
+      ? (local.subjectsMastery || remote.subjectsMastery)
+      : (remote.subjectsMastery || local.subjectsMastery);
+    mergedState.errorNotebook = { ...(remote.errorNotebook || {}), ...(local.errorNotebook || {}) };
+    mergedState.spacedRepetitionCards = { ...(remote.spacedRepetitionCards || {}), ...(local.spacedRepetitionCards || {}) };
+    mergedState.studyGuidesProgress = { ...(remote.studyGuidesProgress || {}), ...(local.studyGuidesProgress || {}) };
+    mergedState.dailyMissions = EnglishLearningEngine.ensureDailyMissions({
+      dailyMissions: (local.dailyMissions?.length || 0) >= (remote.dailyMissions?.length || 0)
+        ? local.dailyMissions
+        : remote.dailyMissions,
+    } as UserState);
+    mergedState.savedQuestions = Array.from(new Set([...(remote.savedQuestions || []), ...(local.savedQuestions || [])]));
+    mergedState.simuladosHistory = [...(remote.simuladosHistory || []), ...(local.simuladosHistory || [])].slice(-24);
+    mergedState.dailyGoalConfig = local.dailyGoalConfig || remote.dailyGoalConfig;
+    mergedState.targetExamGoal = local.targetExamGoal || remote.targetExamGoal;
+    mergedState.englishProgress = EnglishLearningEngine.mergeEnglishProgress(local.englishProgress, remote.englishProgress);
 
     return mergedState;
   }
@@ -318,11 +337,13 @@ export class StorageService {
         }
 
         // Retroactively guarantee no achievements are missed
-        const check = AchievementEngine.checkNewAchievements(parsed);
-        parsed.achievements = check.updatedAchievementsMap;
-        parsed.unlockedTitles = check.updatedUnlockedTitles;
+        const withEnglish = EnglishLearningEngine.ensureProgress(parsed);
+        withEnglish.dailyMissions = EnglishLearningEngine.ensureDailyMissions(withEnglish);
+        const check = AchievementEngine.checkNewAchievements(withEnglish);
+        withEnglish.achievements = check.updatedAchievementsMap;
+        withEnglish.unlockedTitles = check.updatedUnlockedTitles;
 
-        return parsed;
+        return withEnglish;
       }
     } catch {
       // Fallback

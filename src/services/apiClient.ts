@@ -89,4 +89,45 @@ export class ApiClient {
       return { valid: false, isCorrect: false, xpEarned: 0, reason: 'Servidor indisponível.' };
     }
   }
+
+  public static async englishTeacher(payload: {
+    action: string;
+    cefr: string;
+    weakSkill?: string;
+    lastMistake?: string;
+  }): Promise<{ text: string; fallback?: boolean }> {
+    return this.englishAssist('/api/english/teacher', payload);
+  }
+
+  public static async englishConversation(payload: {
+    scenario: string;
+    userText: string;
+    learningMode: boolean;
+    cefr: string;
+  }): Promise<{ text: string; fallback?: boolean }> {
+    return this.englishAssist('/api/english/conversation', payload);
+  }
+
+  public static async englishWritingFeedback(payload: {
+    text: string;
+    cefr: string;
+  }): Promise<{ text: string; fallback?: boolean }> {
+    return this.englishAssist('/api/english/writing-feedback', payload);
+  }
+
+  private static async englishAssist(path: string, payload: Record<string, unknown>): Promise<{ text: string; fallback?: boolean }> {
+    try {
+      const headers = await this.authenticatedHeaders();
+      const res = await fetch(path, {
+        method: 'POST',
+        headers: headers || { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && typeof data.text === 'string') return data;
+      return { text: '', fallback: true };
+    } catch {
+      return { text: '', fallback: true };
+    }
+  }
 }

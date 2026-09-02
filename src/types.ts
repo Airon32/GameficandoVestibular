@@ -51,7 +51,16 @@ export type EducationalQuestionType =
   | 'matching'
   | 'ordering'
   | 'flashcard'
-  | 'essay_structure';
+  | 'essay_structure'
+  | 'translation'
+  | 'listening'
+  | 'speaking'
+  | 'writing';
+
+export type CEFRLevel = 'a0' | 'a1' | 'a2' | 'b1' | 'b2' | 'c1' | 'c2';
+export type EnglishSkill = 'vocabulary' | 'grammar' | 'reading' | 'listening' | 'writing' | 'speaking';
+export type EnglishUnitStatus = 'locked' | 'available' | 'current' | 'completed' | 'mastered' | 'review' | 'boss';
+export type EnglishTrack = 'life' | 'vestibular';
 
 export interface MatchingPair {
   id: string;
@@ -97,6 +106,10 @@ export interface BaseEducationalQuestion {
   reportCount?: number;
   createdAt?: number;
   updatedAt?: number;
+  englishSkill?: EnglishSkill;
+  cefrLevel?: CEFRLevel;
+  audioText?: string;
+  promptToSpeak?: string;
 }
 
 export interface NumericQuestion extends BaseEducationalQuestion {
@@ -142,6 +155,33 @@ export interface FlashcardQuestion extends BaseEducationalQuestion {
   additionalNotes?: string;
 }
 
+export interface TranslationQuestion extends BaseEducationalQuestion {
+  questionType: 'translation';
+  sourceText: string;
+  sourceLang: 'en' | 'pt';
+  acceptedAnswers: string[];
+}
+
+export interface ListeningQuestion extends BaseEducationalQuestion {
+  questionType: 'listening';
+  audioText: string;
+  options: MultipleChoiceOption[];
+  correctOptionId: string;
+}
+
+export interface SpeakingQuestion extends BaseEducationalQuestion {
+  questionType: 'speaking';
+  promptToSpeak: string;
+  acceptedAnswers: string[];
+}
+
+export interface WritingQuestion extends BaseEducationalQuestion {
+  questionType: 'writing';
+  minWords?: number;
+  sampleAnswer?: string;
+  acceptedAnswers?: string[];
+}
+
 export type EducationalQuestion =
   | NumericQuestion
   | MultipleChoiceQuestion
@@ -149,7 +189,11 @@ export type EducationalQuestion =
   | FillBlankQuestion
   | MatchingQuestion
   | OrderingQuestion
-  | FlashcardQuestion;
+  | FlashcardQuestion
+  | TranslationQuestion
+  | ListeningQuestion
+  | SpeakingQuestion
+  | WritingQuestion;
 
 // ==========================================
 // KNOWLEDGE BASE & TEMPLATE GENERATION
@@ -387,6 +431,7 @@ export interface ErrorNotebookEntry {
   firstFailedAt: number;
   lastReviewedAt: number;
   recoveredAt?: number;
+  englishSkill?: EnglishSkill;
 }
 
 export interface SpacedRepetitionCard {
@@ -633,7 +678,7 @@ export interface Achievement {
   id: string;
   title: string;
   description: string;
-  category: 'progression' | 'speed' | 'accuracy' | 'streak' | 'volume' | 'operations' | 'special';
+  category: 'progression' | 'speed' | 'accuracy' | 'streak' | 'volume' | 'operations' | 'special' | 'english';
   icon: string;
   rewardTitle?: string;
   rewardXP?: number;
@@ -678,6 +723,113 @@ export interface InfiniteStats {
   averageAccuracy: number;
   maxStreak: number;
   totalXPEarned: number;
+}
+
+export interface EnglishSkillProgress {
+  skill: EnglishSkill;
+  score: number;
+  confidence: number;
+  estimatedCefr: CEFRLevel | 'unevaluated';
+  accuracy: number;
+  activities: number;
+  lastPracticedAt: number | null;
+  trend: number;
+  mastery: number;
+}
+
+export interface VocabularyEntry {
+  word: string;
+  translation: string;
+  definition: string;
+  cefr: CEFRLevel;
+  partOfSpeech: string;
+  pronunciation?: string;
+  phonetic?: string;
+  exampleSentences: string[];
+  timesSeen: number;
+  timesCorrect: number;
+  timesWrong: number;
+  mastery: number;
+  lastReviewedAt: number | null;
+  nextReviewAt: number | null;
+  ease: number;
+  interval: number;
+  topic: string;
+  tags: string[];
+}
+
+export interface EnglishLessonProgress {
+  lessonId: string;
+  completedAt?: number;
+  accuracy?: number;
+  xpEarned?: number;
+  attempts: number;
+}
+
+export interface EnglishUnitProgress {
+  unitId: string;
+  status: EnglishUnitStatus;
+  bestAccuracy: number;
+  attempts: number;
+  masteredAt?: number;
+}
+
+export interface EnglishCourseProgress {
+  currentLevelId: CEFRLevel;
+  currentUnitId: string;
+  currentLessonId: string;
+  unitProgress: Record<string, EnglishUnitProgress>;
+  lessonProgress: Record<string, EnglishLessonProgress>;
+  completedPercent: number;
+}
+
+export interface EnglishPlacementResult {
+  overall: CEFRLevel;
+  skills: Partial<Record<EnglishSkill, CEFRLevel | 'unevaluated'>>;
+  completedAt: number;
+  skipped: boolean;
+}
+
+export interface EnglishConversationSummary {
+  id: string;
+  scenario: string;
+  completedAt: number;
+  grammar?: number;
+  vocabulary?: number;
+  naturalness?: number;
+  pronunciation?: number;
+  fluency?: number;
+  newWords: string[];
+  mistakes: string[];
+}
+
+export interface EnglishProgressStats {
+  questionsAnswered: number;
+  correct: number;
+  accuracy: number;
+  studyTimeMs: number;
+  wordsLearned: number;
+  wordsMastered: number;
+  reviewsCompleted: number;
+  lessonsCompleted: number;
+  listeningCount: number;
+  speakingCount: number;
+  writingCount: number;
+}
+
+export interface EnglishProgress {
+  version: number;
+  estimatedCefr: CEFRLevel;
+  cefrConfidence: number;
+  placement?: EnglishPlacementResult;
+  placementCompleted: boolean;
+  startedFromBeginning: boolean;
+  skills: Record<EnglishSkill, EnglishSkillProgress>;
+  vocabulary: Record<string, VocabularyEntry>;
+  course: EnglishCourseProgress;
+  stats: EnglishProgressStats;
+  conversationSummaries: EnglishConversationSummary[];
+  lastPracticedAt: number | null;
 }
 
 export interface UserState {
@@ -747,6 +899,7 @@ export interface UserState {
   settings: UserSettings;
   // Recent performance window for adaptive difficulty
   recentHistory?: RecentAnswerRecord[];
+  englishProgress?: EnglishProgress;
   createdAt: number;
   updatedAt: number;
 }

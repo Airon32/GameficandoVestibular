@@ -8,6 +8,7 @@ import {
   FillBlankQuestion,
   SubjectId,
 } from '../types';
+import { CORE_ENGLISH_QUESTION_LIST } from './english/englishQuestions';
 
 export const QUESTION_BANK: EducationalQuestion[] = [
   // ==========================================
@@ -627,7 +628,7 @@ export class QuestionBankService {
   private static cache: Map<string, EducationalQuestion[]> = new Map();
 
   public static getAllQuestions(): EducationalQuestion[] {
-    return QUESTION_BANK;
+    return [...QUESTION_BANK, ...CORE_ENGLISH_QUESTION_LIST];
   }
 
   public static getQuestionsBySubject(subjectId: SubjectId): EducationalQuestion[] {
@@ -645,7 +646,7 @@ export class QuestionBankService {
   }
 
   public static getQuestionById(id: string): EducationalQuestion | undefined {
-    return QUESTION_BANK.find((q) => q && q.id === id);
+    return QUESTION_BANK.find((q) => q && q.id === id) || CORE_ENGLISH_QUESTION_LIST.find((q) => q.id === id);
   }
 
   public static getRandomQuestions(
@@ -660,7 +661,7 @@ export class QuestionBankService {
       maxDifficulty?: number;
     } = {}
   ): EducationalQuestion[] {
-    let pool = QUESTION_BANK.filter((q): q is EducationalQuestion => Boolean(q && q.id));
+    let pool = [...QUESTION_BANK, ...CORE_ENGLISH_QUESTION_LIST].filter((q): q is EducationalQuestion => Boolean(q && q.id));
 
     if (options.subjectId) {
       pool = pool.filter((q) => q.subjectId === options.subjectId);

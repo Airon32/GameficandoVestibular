@@ -211,10 +211,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 </div>
                 <div>
                   <span className="text-xs font-black text-white block">
-                    Buscando sua conta anterior com Nível alto & XP?
+                    Recuperar o progresso deste dispositivo?
                   </span>
                   <span className="text-[11px] text-[#aaa]">
-                    Restaure e vincule seu progresso em 1 clique.
+                    Restaure o seu save local ou o backup da sua conta. Sem perfis públicos.
                   </span>
                 </div>
               </div>

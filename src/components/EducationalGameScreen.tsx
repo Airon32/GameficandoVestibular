@@ -13,6 +13,9 @@ import {
 import { ScientificRenderer } from './ScientificRenderer';
 import { SUBJECTS_CONFIG } from '../config/subjectsConfig';
 import { soundService } from '../services/soundService';
+import { XPManager } from '../engines/XPManager';
+import { EnglishLearningEngine } from '../engines/EnglishLearningEngine';
+import { EnglishExerciseRenderer } from './english/EnglishExerciseRenderer';
 import {
   Sparkles,
   Flame,
@@ -70,6 +73,7 @@ export const EducationalGameScreen: React.FC<EducationalGameScreenProps> = ({
   onExit,
   currentStreak = 0,
   combo = 0,
+  userState,
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
@@ -169,10 +173,15 @@ export const EducationalGameScreen: React.FC<EducationalGameScreenProps> = ({
       soundService.playWrong();
     }
 
-    // Balanced XP per question: Base 15 XP + Speed Bonus (up to 10 XP) + Difficulty scaling
-    const baseXP = correct ? Math.round(15 + (currentQuestion.difficulty / 100) * 10) : 2;
-    const speedBonus = correct && timeTakenMs < 15000 ? 5 : 0;
-    const earnedXP = baseXP + speedBonus;
+    const xp = XPManager.calculateQuestionXP({
+      difficulty: currentQuestion.difficulty || 30,
+      timeTakenMs,
+      currentStreak: combo,
+      isCorrect: correct,
+      gameMode,
+      userMastery: userState?.subjectsMastery?.[currentQuestion.subjectId]?.masteryPercent || 0,
+    });
+    const earnedXP = xp.finalXP;
     setTotalXPEarned((prev) => prev + earnedXP);
 
     setAnswersHistory((prev) => [
@@ -663,6 +672,20 @@ export const EducationalGameScreen: React.FC<EducationalGameScreenProps> = ({
               )}
             </div>
           )}
+
+          {(currentQuestion.questionType === 'fill_blank' ||
+            currentQuestion.questionType === 'translation' ||
+            currentQuestion.questionType === 'listening' ||
+            currentQuestion.questionType === 'speaking' ||
+            currentQuestion.questionType === 'writing') &&
+            !isAnswerSubmitted && (
+              <EnglishExerciseRenderer
+                question={currentQuestion}
+                onSubmit={(answer) => {
+                  handleAnswerSubmission(answer, EnglishLearningEngine.evaluateQuestion(currentQuestion, answer));
+                }}
+              />
+            )}
         </div>
 
         {/* Feedback and Explanation Box */}

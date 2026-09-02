@@ -205,7 +205,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               </span>
             </div>
             <p className="text-[11px] text-[#aaa] leading-relaxed">
-              Trocou de navegador, abriu no celular ou instalou o App Android? Digite seu <strong>E-mail</strong> ou <strong>ID de Jogador</strong> para trazer todas as suas conquistas de volta.
+              Trocou de navegador ou instalou o app? Digite o <strong>e-mail da sua conta</strong> ou o <strong>ID deste save</strong> para trazer o seu progresso de volta. Não há perfis públicos.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-2">

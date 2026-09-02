@@ -122,7 +122,7 @@ export const AccountRecoveryModal: React.FC<AccountRecoveryModalProps> = ({
         }, 1800);
       } else {
         setFeedback({
-          message: 'Nenhum perfil encontrado com esse identificador. Verifique o @username digitado.',
+          message: 'Nenhum save encontrado com esse e-mail ou ID da sua conta neste dispositivo.',
           success: false,
         });
       }
@@ -163,8 +163,8 @@ export const AccountRecoveryModal: React.FC<AccountRecoveryModalProps> = ({
             <Sparkles className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="text-xl font-black text-white tracking-tight">Recuperar Conta & Progresso</h3>
-            <p className="text-xs text-[#888]">Restaure seu Nível, XP, Conquistas e Estatísticas com 1 clique.</p>
+            <h3 className="text-xl font-black text-white tracking-tight">Recuperar o seu progresso</h3>
+            <p className="text-xs text-[#888]">Restaure o save deste dispositivo ou o backup da sua conta. O app continua single-player.</p>
           </div>
         </div>
 
@@ -210,7 +210,7 @@ export const AccountRecoveryModal: React.FC<AccountRecoveryModalProps> = ({
         {/* Scan Status & Header */}
         <div className="flex items-center justify-between mb-2.5 shrink-0">
           <span className="text-[11px] font-bold uppercase tracking-wider text-[#777]">
-            Perfis Localizados no Sistema
+            Perfis salvos neste dispositivo
           </span>
           <button
             onClick={scanProfiles}
@@ -234,7 +234,7 @@ export const AccountRecoveryModal: React.FC<AccountRecoveryModalProps> = ({
               <ShieldAlert className="w-8 h-8 text-[#555] mx-auto mb-2" />
               <p className="text-sm font-bold text-white mb-1">Nenhum perfil listado</p>
               <p className="text-xs text-[#777]">
-                Digite seu @username (ex: <span className="text-orange-400 font-mono">@user_user_1</span>) na busca acima para localizar.
+                Digite o e-mail ou o ID da sua conta para localizar o seu próprio save.
               </p>
             </div>
           ) : (

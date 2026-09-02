@@ -30,6 +30,7 @@ export const ErrorNotebookScreen: React.FC<ErrorNotebookScreenProps> = ({
 }) => {
   const [filterSubject, setFilterSubject] = useState<SubjectId | 'all'>('all');
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'recovered'>('all');
+  const [filterEnglishSkill, setFilterEnglishSkill] = useState<'all' | 'vocabulary' | 'grammar' | 'reading' | 'listening' | 'writing' | 'speaking'>('all');
 
   const stats = ErrorNotebookEngine.getStats(userState);
   const notebookEntries: ErrorNotebookEntry[] = Object.values(userState.errorNotebook || {}) as ErrorNotebookEntry[];
@@ -37,6 +38,7 @@ export const ErrorNotebookScreen: React.FC<ErrorNotebookScreenProps> = ({
   // Filter entries
   const filtered = notebookEntries.filter((entry: ErrorNotebookEntry) => {
     if (filterSubject !== 'all' && entry.subjectId !== filterSubject) return false;
+    if (filterSubject === 'ingles' && filterEnglishSkill !== 'all' && entry.englishSkill !== filterEnglishSkill) return false;
     if (filterStatus === 'pending' && entry.status === 'recovered') return false;
     if (filterStatus === 'recovered' && entry.status !== 'recovered') return false;
     return true;
@@ -45,7 +47,25 @@ export const ErrorNotebookScreen: React.FC<ErrorNotebookScreenProps> = ({
   const handleStartRecovery = () => {
     const pendingQuestions = filtered
       .filter((e) => e.status !== 'recovered')
-      .map((e) => QuestionBankService.getQuestionById(e.questionId))
+      .map((e) => {
+        const fromBank = QuestionBankService.getQuestionById(e.questionId);
+        if (fromBank) return fromBank;
+        return {
+          id: e.questionId,
+          subjectId: e.subjectId,
+          topicId: e.topicId,
+          difficulty: 40,
+          questionType: 'multiple_choice' as const,
+          prompt: e.questionPrompt,
+          explanation: e.explanation,
+          options: [
+            { id: 'A', text: String(e.correctAnswer), isCorrect: true },
+            { id: 'B', text: String(e.userLastWrongAnswer || 'Outra resposta') },
+          ],
+          correctOptionId: 'A',
+          englishSkill: e.englishSkill,
+        };
+      })
       .filter(Boolean);
 
     if (pendingQuestions.length > 0) {
@@ -126,8 +146,21 @@ export const ErrorNotebookScreen: React.FC<ErrorNotebookScreenProps> = ({
             Lista de Questões Registradas ({filtered.length})
           </h2>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            {(['all', 'matematica', 'ingles'] as const).map((id) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setFilterSubject(id === 'all' ? 'all' : id)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold ${
+                  filterSubject === id ? 'bg-neutral-800 text-white' : 'bg-neutral-900 text-neutral-400'
+                }`}
+              >
+                {id === 'all' ? 'All' : id === 'ingles' ? 'Inglês' : 'Matemática'}
+              </button>
+            ))}
             <button
+              type="button"
               onClick={() => setFilterStatus('all')}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${
                 filterStatus === 'all'
@@ -158,6 +191,20 @@ export const ErrorNotebookScreen: React.FC<ErrorNotebookScreenProps> = ({
               Superados
             </button>
           </div>
+          {filterSubject === 'ingles' && (
+            <div className="flex flex-wrap gap-2">
+              {(['all', 'grammar', 'vocabulary', 'reading', 'listening', 'writing', 'speaking'] as const).map((skill) => (
+                <button
+                  key={skill}
+                  type="button"
+                  onClick={() => setFilterEnglishSkill(skill)}
+                  className={`rounded-full px-3 py-1 text-[11px] font-bold ${filterEnglishSkill === skill ? 'bg-blue-600 text-white' : 'bg-neutral-900 text-neutral-400'}`}
+                >
+                  {skill}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {filtered.length === 0 ? (
